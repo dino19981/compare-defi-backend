@@ -11,6 +11,9 @@ export interface HtxEarnDto {
 
 export interface HtxEarnProductDto {
   viewYearRate: number;
+  projectEnumType: number;
+  term: number;
+  type: number;
 }
 
 // const data = {

@@ -1,10 +1,14 @@
-import { EarnItem, EarnItemLevel } from '../types/EarnItem';
-import { isAvailableTokenForEarnings } from '../helpers';
-import { BybitEarnDto } from '@modules/bybit/types';
+import { EarnItem, EarnItemLevel, infinityValue } from '../types/EarnItem';
+import { AvailableTokens, isAvailableTokenForEarnings } from '../helpers';
+import { BybitEarnDto, BybitProductType } from '@modules/bybit/types';
 import { v4 as uuidv4 } from 'uuid';
-import { getEarnItemNameByProductType } from '@modules/bybit/helpers';
+import {
+  excludedByBitStackingProductTypes,
+  getEarnItemNameByProductType,
+} from '@modules/bybit/helpers';
+import { EarnPlatform } from '../types';
 
-const coinNameByCoinNumber: Record<number, string> = {
+const coinNameByCoinNumber: Record<number, AvailableTokens> = {
   1: 'BTC',
   2: 'ETH',
   5: 'USDT',
@@ -22,6 +26,12 @@ export function formatBybitEarn(items: BybitEarnDto[]): EarnItem[] {
     }
 
     item.product_types.forEach((productType) => {
+      if (
+        excludedByBitStackingProductTypes.includes(productType.product_type)
+      ) {
+        return;
+      }
+
       acc.push({
         id: uuidv4(),
         name: getEarnItemNameByProductType(productType.product_type),
@@ -31,18 +41,31 @@ export function formatBybitEarn(items: BybitEarnDto[]): EarnItem[] {
         periodType: 'flexible',
         platform: {
           link: 'https://www.bybit.com/en/earn/home?ref=5PDEAN',
-          name: 'ByBit',
+          name: EarnPlatform.Bybit,
         },
-        rates: [
-          {
-            currentApy: +productType.apy_max_e8 / 1_000_000,
-            rateLevel: 0,
-          },
-        ],
+        maxRate: +productType.apy_max_e8 / 1_000_000,
+        rateSettings: getRateSettings(productType.tiered_apy_list),
+        duration: getDuration(productType),
         productLevel: EarnItemLevel.Beginner,
       });
     });
 
     return acc;
   }, []);
+}
+
+function getRateSettings(items: BybitProductType['tiered_apy_list']) {
+  return items.map((productType) => ({
+    apy: +productType.apy_e8 / 1_000_000,
+    min: +productType.from_num,
+    max: productType.to_num === '-1' ? infinityValue : +productType.to_num,
+  }));
+}
+
+function getDuration(productType: BybitProductType) {
+  if (productType.duration_max === 0) {
+    return infinityValue;
+  }
+
+  return productType.duration_max || productType.duration_min;
 }

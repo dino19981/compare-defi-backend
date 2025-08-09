@@ -1,7 +1,8 @@
 import { OkxEarnDto } from 'src/modules/okx/types';
 import { isAvailableTokenForEarnings } from '../helpers';
-import { EarnItem, EarnItemLevel } from '../types';
+import { EarnItem, EarnItemLevel, infinityValue } from '../types';
 import { v4 as uuid } from 'uuid';
+import { EarnPlatform } from '../types';
 
 export const formatOkxEarn = (items: OkxEarnDto[]) => {
   return items.reduce((acc: EarnItem[], item) => {
@@ -14,17 +15,13 @@ export const formatOkxEarn = (items: OkxEarnDto[]) => {
       token: {
         name: item.investCurrency.currencyName,
       },
+      duration: infinityValue,
       periodType: 'flexible',
       platform: {
         link: 'https://okx.com/join/41728095',
-        name: 'Okx',
+        name: EarnPlatform.Okx,
       },
-      rates: [
-        {
-          currentApy: +item.rate.rateNum.value[0],
-          rateLevel: 0,
-        },
-      ],
+      maxRate: Math.max(...item.rate.rateNum.value.map(Number)),
       productLevel: EarnItemLevel.Beginner,
     });
 

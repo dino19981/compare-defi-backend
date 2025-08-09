@@ -12,7 +12,7 @@ export interface BybitEarnDto {
   product_types: BybitProductType[];
 }
 
-interface BybitProductType {
+export interface BybitProductType {
   product_type: number;
   apy_min_e8: string;
   apy_max_e8: string;

@@ -7,7 +7,7 @@ import { getEarnError } from 'src/helpers/earn';
 
 @Injectable()
 export class OkxService {
-  private baseUrl: string = 'https://www.okx.com';
+  private baseUrl: string = 'https://www.okx.com/priapi';
   private readonly httpService: HttpService;
   private readonly logger = new Logger(OkxService.name);
 
@@ -28,13 +28,18 @@ export class OkxService {
 
   async getEarnItems() {
     try {
-      const url = `/priapi/v1/earn/simple-earn/all-products?type=all&t=${Date.now().valueOf()}`;
+      const url = `v1/earn/currency?t=${Date.now().valueOf()}`;
 
       const response = await firstValueFrom(
-        this.httpService.get<OkxEarnsDto>(url),
+        this.httpService.get<OkxEarnsDto>(url, {
+          headers: {
+            'x-site-info':
+              '==QfxojI5RXa05WZiwiIMFkQPx0Rfh1SPJiOiUGZvNmIsICTOJiOi42bpdWZyJye',
+          },
+        }),
       );
 
-      return response.data.data.allProducts.currencies;
+      return response.data.data.currencies;
     } catch (error: unknown) {
       this.logger.error(getEarnError(error, 'okx'));
       return [];

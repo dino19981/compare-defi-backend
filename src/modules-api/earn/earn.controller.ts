@@ -17,4 +17,13 @@ export class EarnController {
   getEarnItems(): Promise<EarnResponseDto> {
     return this.earnService.getEarnItems();
   }
+
+  @Get('without-job')
+  @SwaggerSchemaDecorator({
+    schemaResponse: EarnResponseDto,
+    description: 'Получить список earn элементов',
+  })
+  getEarnItemsWithoutJob(): Promise<EarnResponseDto> {
+    return this.earnService.getEarnItemsJob();
+  }
 }

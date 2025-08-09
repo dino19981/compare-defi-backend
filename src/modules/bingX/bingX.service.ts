@@ -4,8 +4,6 @@ import axios from 'axios';
 import { firstValueFrom } from 'rxjs';
 import { BingXEarnsDto } from './types';
 import { getEarnError } from 'src/helpers/earn';
-// import { BingXSignatureHelper } from './helpers/signature';
-import { bingXConfig } from './config/bingX.config';
 
 @Injectable()
 export class BingXService {
@@ -15,7 +13,7 @@ export class BingXService {
   constructor() {
     this.httpService = new HttpService(
       axios.create({
-        baseURL: bingXConfig.baseUrl,
+        // baseURL: 'https://api-app.acc-de.com/api',
         timeout: 5000,
         responseType: 'json',
         withCredentials: true,
@@ -29,40 +27,23 @@ export class BingXService {
 
   async getEarnItems() {
     try {
-      const url = `/wealth-sales-trading/v1/product/list`;
-
-      // Создаем параметры для подписи
-      // const signatureParams = BingXSignatureHelper.createSignatureParams(
-      //   bingXConfig.apiKey,
-      //   {
-      //     method: 'GET',
-      //     path: url,
-      //   },
-      // );
-
-      // Генерируем подпись
-      // const signature = BingXSignatureHelper.generateSignature(
-      //   signatureParams,
-      //   bingXConfig.secretKey,
-      // );
+      const url = `https://api-app.acc-de.com/api/wealth-sales-trading/v1/product/list?searchType=&dataType=&assetName=&orderBy=`;
 
       const response = await firstValueFrom(
         this.httpService.get<BingXEarnsDto>(url, {
           headers: {
-            referer: 'https://bingx.com/',
-            reg_channel: 'official',
-            sign: 'DE708DFA3C5912CB39B633D27E0C46E61FD5F86E5909C54E770A8B9413BC0B0F',
-            platformid: 30,
-            lang: 'en',
+            app_version: '5.2.11',
             device_id: '01555455c7924d49a634c3b301d59df6',
-            app_version: '5.2.9',
-            traceid: 'f4bea8cfb3d84a41a57240b5087392b5',
-            timestamp: new Date().valueOf(),
+            lang: 'ru-RU',
+            platformid: '30',
+            sign: 'E3524DD3BB7AD59EA82E7F84C0E79F633FD5E002295E5392D4CDAC8CB094C34B',
+            traceid: 'cfa2b1ff168e409597cef8f7272e2f66',
+            timestamp: '1752862446401',
           },
         }),
       );
 
-      return response.data.data;
+      return response.data.data.result;
     } catch (error: unknown) {
       this.logger.error(getEarnError(error, 'bingX'));
       return [];

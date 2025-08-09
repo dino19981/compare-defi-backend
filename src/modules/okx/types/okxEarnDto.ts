@@ -1,8 +1,6 @@
 export interface OkxEarnsDto {
   data: {
-    allProducts: {
-      currencies: OkxEarnDto[];
-    };
+    currencies: OkxEarnDto[];
   };
 }
 

@@ -16,6 +16,9 @@ export interface KucoinEarnProductDto {
   apr: string;
   // number
   total_apr: string;
+  duration: number;
+  tags?: string[];
+  category: string;
 }
 
 // const data = {

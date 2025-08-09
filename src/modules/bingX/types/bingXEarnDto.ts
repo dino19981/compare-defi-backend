@@ -1,16 +1,35 @@
 export interface BingXEarnsDto {
   data: {
-    data: BingXEarnDto[];
+    result: BingXEarnDto[];
   };
 }
 
 export interface BingXEarnDto {
-  productId: string;
-  productName: string;
-  currency: string;
+  assetName: string;
+  icon: string;
+  minApy: string;
+  maxApy: string;
+  products: BingxEarnProduct[];
+}
+
+export interface BingxEarnProduct {
+  productId: number;
+  productType: 1 | 2 | 3;
+  duration: number;
   apy: string;
-  period: string;
-  minInvestAmount: string;
-  maxInvestAmount: string;
-  status: string;
+  productName: string;
+  tags: {
+    // 2 - новый пользователь
+    // 1 - vip пользователь
+    tagId: number;
+    tagType: number;
+  }[];
+  tieredApyRule?: {
+    rules: {
+      low: string;
+      high: string;
+      apy: string;
+      level: number;
+    }[];
+  };
 }

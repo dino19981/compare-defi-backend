@@ -7,6 +7,8 @@ const productTypeToName: Record<number, string> = {
   9: 'Wealth Management',
 };
 
+export const excludedByBitStackingProductTypes = [2, 5];
+
 export const getEarnItemNameByProductType = (productType: number) => {
   return productTypeToName[productType];
 };

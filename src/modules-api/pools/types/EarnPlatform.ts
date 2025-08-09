@@ -1,0 +1,16 @@
+export enum EarnPlatform {
+  Binance = 'Binance',
+  Bybit = 'Bybit',
+  Mexc = 'Mexc',
+  Okx = 'Okx',
+  Kucoin = 'Kucoin',
+  Htx = 'Htx',
+  BingX = 'BingX',
+  Bitget = 'Bitget',
+  Jito = 'Jito',
+  Lido = 'Lido',
+  Mellow = 'Mellow',
+  Navi = 'Navi',
+  Spark = 'Spark',
+  Venus = 'Venus',
+}

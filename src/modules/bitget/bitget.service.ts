@@ -13,6 +13,8 @@ export class BitgetService {
   private readonly httpService: HttpService;
   private readonly logger = new Logger(BitgetService.name);
   private readonly appConfig = config();
+  private earnEndpoint: string =
+    '/api/v2/earn/savings/product?filter=available';
 
   constructor() {
     this.httpService = new HttpService(
@@ -31,9 +33,9 @@ export class BitgetService {
 
   async getEarnItems() {
     try {
-      const endpoint = '/api/v2/earn/savings/product?filter=available_and_held';
+      // https://www.bitget.com/api-doc/earn/savings/Savings-Products
       const response = await firstValueFrom(
-        this.httpService.get<BitgetEarnsDto>(endpoint, {
+        this.httpService.get<BitgetEarnsDto>(this.earnEndpoint, {
           headers: this.getHeaders(),
         }),
       );
@@ -46,15 +48,8 @@ export class BitgetService {
   }
 
   private getHeaders = () => {
-    const endpoint = '/api/v2/earn/savings/product?filter=available_and_held';
-
-    console.log(
-      this.appConfig.exchanges.bitget.secretKey,
-      'secretKeysecretKeysecretKey',
-    );
-
     const timestamp = Date.now().toString();
-    const message = timestamp + 'GET' + endpoint;
+    const message = timestamp + 'GET' + this.earnEndpoint;
     const signature = crypto
       .createHmac('sha256', this.appConfig.exchanges.bitget.secretKey!)
       .update(message)

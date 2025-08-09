@@ -6,43 +6,27 @@ import {
   IsEnum,
   IsArray,
   ValidateNested,
-  IsUrl,
+  IsOptional,
 } from 'class-validator';
-import { EarnItemLevel } from '../types/EarnItem';
-
-export class EarnItemTokenDto {
-  @ApiProperty({ description: 'Название токена', example: 'BTC' })
-  @IsString()
-  name: string;
-}
-
-export class EarnItemRateDto {
-  @ApiProperty({ description: 'Уровень ставки', example: 1 })
-  @IsNumber()
-  rateLevel: number;
-
-  @ApiProperty({ description: 'Текущий APY', example: 5.5 })
-  @IsNumber()
-  currentApy: number;
-}
-
-export class EarnItemPlatformDto {
-  @ApiProperty({ description: 'Название платформы', example: 'Binance' })
-  @IsString()
-  name: string;
-
-  @ApiProperty({
-    description: 'Ссылка на платформу',
-    example: 'https://binance.com',
-  })
-  @IsUrl()
-  link: string;
-}
+import { EarnItemLevel, EarnItemRateSettings } from '../types/EarnItem';
+import { EarnItemTokenDto } from './EarnItemToken.dto';
+import { EarnItemPlatformDto } from './EarnItemPlatform.dto';
+import { EarnItemRateSettingsDto } from './EarnItemRateSettings.dto';
+import { EarnItemBadge } from '../types/EarnItem';
 
 export class EarnItemDto {
   @ApiProperty({ description: 'Уникальный идентификатор', example: 'earn_001' })
   @IsString()
   id: string;
+
+  @ApiProperty({
+    description: 'Название продукта',
+    example: 'Simple Earn',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  name?: string;
 
   @ApiProperty({ description: 'Информация о токене' })
   @ValidateNested()
@@ -62,12 +46,6 @@ export class EarnItemDto {
   @Type(() => EarnItemPlatformDto)
   platform: EarnItemPlatformDto;
 
-  @ApiProperty({ description: 'Массив ставок', type: [EarnItemRateDto] })
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => EarnItemRateDto)
-  rates: EarnItemRateDto[];
-
   @ApiProperty({
     description: 'Уровень продукта',
     enum: EarnItemLevel,
@@ -75,6 +53,44 @@ export class EarnItemDto {
   })
   @IsEnum(EarnItemLevel)
   productLevel: EarnItemLevel;
+
+  @ApiProperty({
+    description: 'Максимальная ставка',
+    example: 100,
+  })
+  @IsNumber()
+  maxRate: number;
+
+  @ApiProperty({
+    description: 'Настройки ставки',
+    type: [EarnItemRateSettingsDto],
+    example: [],
+    required: false,
+  })
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => EarnItemRateSettingsDto)
+  rateSettings?: EarnItemRateSettings[];
+
+  @ApiProperty({
+    description: 'Длительность стейкинга',
+    example: 100,
+    oneOf: [{ type: 'number' }, { type: 'string', enum: ['Infinity'] }],
+  })
+  duration: number | 'Infinity';
+
+  @ApiProperty({
+    description: 'Бейджи',
+    type: [String],
+    enum: EarnItemBadge,
+    example: [],
+    required: false,
+  })
+  @IsArray()
+  @IsOptional()
+  @IsEnum(EarnItemBadge, { each: true })
+  badges?: EarnItemBadge[];
 }
 
 export class EarnResponseDto {
