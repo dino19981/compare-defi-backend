@@ -1,2 +1,2 @@
-export * from './EarnItem';
-export * from './EarnPlatform';
+export * from './PoolItem';
+export * from './PoolPlatform';

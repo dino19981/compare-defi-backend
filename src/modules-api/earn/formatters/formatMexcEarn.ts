@@ -4,11 +4,15 @@ import {
   EarnItemLevel,
   infinityValue,
 } from '../types/EarnItem';
-import { AvailableTokens, isAvailableTokenForEarnings } from '../helpers';
+import {
+  AvailableTokensForEarn,
+  isAvailableTokenForEarnings,
+} from '../helpers';
 import { MexcEarnItem, MexcEarnProduct } from '@modules/mexc/types';
 import { EarnPlatform } from '../types';
+import { v4 as uuidv4 } from 'uuid';
 
-const forNewUsersLimits: Record<AvailableTokens, number> = {
+const forNewUsersLimits: Record<AvailableTokensForEarn, number> = {
   USDT: 100,
   USDC: 100,
   ETH: 50,
@@ -43,7 +47,7 @@ export function formatMexcEarn(items: MexcEarnItem[]): EarnItem[] {
         const isForNewUsers = apy > forNewUsersLimits[item.currency];
 
         acc.push({
-          id: product.id,
+          id: uuidv4(),
           token: {
             name: item.currency,
           },

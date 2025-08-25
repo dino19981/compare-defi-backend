@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { EarnItemDto, EarnResponseDto } from './dtos/earn.dto';
+import { EarnItemDto, EarnRequest, EarnResponseDto } from './dtos/earn.dto';
 import { BinanceService } from '@modules/binance';
 import { BybitService } from '@modules/bybit';
 import { OkxService } from '@modules/okx';
@@ -29,9 +29,7 @@ import { LidoService } from '@modules/lido';
 import { VenusService } from '@modules/venus';
 import { NaviService } from '@modules/navi';
 import { JitoService } from '@modules/jito';
-import * as path from 'path';
-import * as fs from 'fs';
-import { EARN_DATA_FILE_NAME } from './constants/localDataEarnPath';
+import { EarnRepository } from './earn.repository';
 
 @Injectable()
 export class EarnService {
@@ -50,6 +48,7 @@ export class EarnService {
     private readonly venusService: VenusService,
     private readonly naviService: NaviService,
     private readonly jitoService: JitoService,
+    private readonly earnRepository: EarnRepository,
   ) {}
 
   async getEarnItemsJob(): Promise<EarnResponseDto> {
@@ -135,29 +134,35 @@ export class EarnService {
     }
   }
 
-  async getEarnItems(): Promise<EarnResponseDto> {
-    const dataDir = path.join(process.cwd(), 'data');
+  async getEarnItems(query: EarnRequest): Promise<EarnResponseDto> {
+    try {
+      const earnItems = await this.earnRepository.findAll(query);
+      console.log(earnItems.length, 'earnItemsearnItemsearnItemsearnItems');
 
-    const filePath = path.join(dataDir, EARN_DATA_FILE_NAME);
+      if (!earnItems.length) {
+        const earnData = await this.saveEarnItemsInDb();
 
-    if (!fs.existsSync(filePath)) {
-      const earnData = await this.getEarnItemsJob();
-
-      if (!fs.existsSync(dataDir)) {
-        await fs.promises.mkdir(dataDir, { recursive: true });
+        return {
+          data: earnData.data,
+        };
       }
 
-      const dataToSave = {
-        totalItems: earnData.data.length,
-        data: earnData.data,
+      return {
+        data: earnItems,
       };
+    } catch (e: any) {
+      this.logger.error(`Не удалось получить Earn, ${e?.message}`);
 
-      await fs.promises.writeFile(filePath, JSON.stringify(dataToSave), 'utf8');
-
-      return dataToSave;
+      return {
+        data: [],
+      };
     }
+  }
 
-    const data = await fs.promises.readFile(filePath, 'utf8');
-    return JSON.parse(data) as EarnResponseDto;
+  async saveEarnItemsInDb() {
+    const earnData = await this.getEarnItemsJob();
+    await this.earnRepository.saveMany(earnData.data);
+
+    return earnData;
   }
 }

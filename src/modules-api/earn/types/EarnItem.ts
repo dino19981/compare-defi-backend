@@ -4,11 +4,11 @@ export const infinityValue: InfinityValue = 'Infinity';
 export interface EarnItem {
   id: string;
 
-  // @посмотреть: нужно ли это поле?
+  // @посмотреть: нужны ли эти поля?
   name?: string;
+  periodType: 'flexible' | 'fixed';
 
   token: EarnItemToken;
-  periodType: 'flexible' | 'fixed';
   platform: EarnItemPlatform;
 
   // @посмотреть: нужно ли это поле? оно такое же как и badges

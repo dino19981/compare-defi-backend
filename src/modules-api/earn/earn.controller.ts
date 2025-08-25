@@ -1,7 +1,7 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { EarnService } from './earn.service';
-import { EarnResponseDto } from './dtos/earn.dto';
+import { EarnRequest, EarnResponseDto } from './dtos/earn.dto';
 import { SwaggerSchemaDecorator } from '../../decorators';
 
 @ApiTags('earn')
@@ -11,11 +11,12 @@ export class EarnController {
 
   @Get()
   @SwaggerSchemaDecorator({
+    schemaRequest: EarnRequest,
     schemaResponse: EarnResponseDto,
     description: 'Получить список earn элементов',
   })
-  getEarnItems(): Promise<EarnResponseDto> {
-    return this.earnService.getEarnItems();
+  getEarnItems(@Query() query: EarnRequest): Promise<EarnResponseDto> {
+    return this.earnService.getEarnItems(query);
   }
 
   @Get('without-job')

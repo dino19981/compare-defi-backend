@@ -1,1 +1,1 @@
-export * from './isAvailableTokenForEarnings';
+export * from './isAvailableTokenForPools';

@@ -2,6 +2,7 @@ import { BitgetEarnDto } from '@modules/bitget/types';
 import { EarnItem, EarnItemLevel, infinityValue } from '../types';
 import { isAvailableTokenForEarnings } from '../helpers';
 import { EarnPlatform } from '../types';
+import { v4 as uuidv4 } from 'uuid';
 
 export const formatBitgetEarn = (items: BitgetEarnDto[]) => {
   return items.reduce((acc: EarnItem[], item) => {
@@ -10,7 +11,7 @@ export const formatBitgetEarn = (items: BitgetEarnDto[]) => {
     }
 
     acc.push({
-      id: item.productId,
+      id: uuidv4(),
       name: item.coin,
       token: {
         name: item.coin,

@@ -1,5 +1,8 @@
 import { EarnItem, EarnItemLevel, infinityValue } from '../types/EarnItem';
-import { AvailableTokens, isAvailableTokenForEarnings } from '../helpers';
+import {
+  AvailableTokensForEarn,
+  isAvailableTokenForEarnings,
+} from '../helpers';
 import { BybitEarnDto, BybitProductType } from '@modules/bybit/types';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -8,7 +11,7 @@ import {
 } from '@modules/bybit/helpers';
 import { EarnPlatform } from '../types';
 
-const coinNameByCoinNumber: Record<number, AvailableTokens> = {
+const coinNameByCoinNumber: Record<number, AvailableTokensForEarn> = {
   1: 'BTC',
   2: 'ETH',
   5: 'USDT',

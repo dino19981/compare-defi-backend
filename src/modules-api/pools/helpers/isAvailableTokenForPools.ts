@@ -1,4 +1,4 @@
-export type AvailableTokens =
+export type AvailableTokensForPools =
   | 'USDT'
   | 'USDC'
   | 'suiUSDT'
@@ -17,9 +17,7 @@ export type AvailableTokens =
   | 'stSUI'
   | 'haSUI';
 
-// @доделать: Добавить суи в coinNameByCoinNumber
-// Добавь новый токен в coinNameByCoinNumber
-export const AVAILABLE_TOKENS = [
+export const AVAILABLE_TOKENS_FOR_POOLS = [
   'USDT',
   'suiUSDT',
   'wUSDT',
@@ -46,9 +44,10 @@ export const AVAILABLE_TOKENS = [
   'haSUI',
 ] as const;
 
-export const isAvailableTokenForEarnings = (token: string) => {
+export const isAvailableTokenForPools = (token: string) => {
   return (
-    AVAILABLE_TOKENS.find((t) => t.toUpperCase() === token.toUpperCase()) !==
-    undefined
+    AVAILABLE_TOKENS_FOR_POOLS.find(
+      (t) => t.toUpperCase() === token.toUpperCase(),
+    ) !== undefined
   );
 };

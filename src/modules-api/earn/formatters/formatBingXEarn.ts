@@ -7,6 +7,7 @@ import {
 import { isAvailableTokenForEarnings } from '../helpers';
 import { BingXEarnDto, BingxEarnProduct } from '@modules/bingX/types';
 import { EarnPlatform } from '../types';
+import { v4 as uuidv4 } from 'uuid';
 
 export function formatBingXEarn(items: BingXEarnDto[]): EarnItem[] {
   return items.reduce((acc: EarnItem[], item) => {
@@ -20,7 +21,7 @@ export function formatBingXEarn(items: BingXEarnDto[]): EarnItem[] {
       }
 
       acc.push({
-        id: product.productId.toString(),
+        id: uuidv4(),
         name: product.productName,
         token: {
           name: item.assetName,

@@ -12,8 +12,6 @@ async function bootstrap() {
     .setTitle(appConfig.swagger.title)
     .setDescription(appConfig.swagger.description)
     .setVersion(appConfig.swagger.version)
-    .addTag('earnings', 'Операции с заработком')
-    .addTag('stacking', 'Операции со стейкингом')
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);

@@ -5,6 +5,7 @@ import {
 import { EarnItem, EarnItemLevel, infinityValue } from '../types/EarnItem';
 import { isAvailableTokenForEarnings } from '../helpers';
 import { EarnPlatform } from '../types';
+import { v4 as uuidv4 } from 'uuid';
 
 export function formatBinanceEarn(items: BinanceEarnDto[]): EarnItem[] {
   return items.reduce((acc: EarnItem[], item) => {
@@ -23,7 +24,7 @@ export function formatBinanceEarn(items: BinanceEarnDto[]): EarnItem[] {
 
     simpleEarnData.forEach((product) => {
       acc.push({
-        id: product.productId,
+        id: uuidv4(),
         name: 'Simple Earn',
         token: {
           name: item.asset,

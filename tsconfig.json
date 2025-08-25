@@ -19,7 +19,8 @@
     "noFallthroughCasesInSwitch": false,
     "paths": {
       "@modules/*": ["src/modules/*"],
-      "@modules-api/*": ["src/modules-api/*"]
+      "@modules-api/*": ["src/modules-api/*"],
+      "@shared-modules/*": ["src/shared/modules/*"]
     }
   }
 }
