@@ -1,14 +1,19 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PoolItemDto, PoolsResponseDto } from './dtos/pool.dto';
+import { MetaDto, PoolItemDto, PoolsResponseDto } from './dtos/pool.dto';
 import { PancakeSwapService } from '@modules/pancakeSwap';
 import { formatPancakeSwapPools, formatUniSwapPools } from './formatters';
 import { Chains, ChainsService } from 'src/shared/modules/chains';
 import { UniSwapService } from '@modules/uniswap';
 import { PoolsRepository } from './pools.repository';
+import { PoolRequest } from './dtos/poolRequest.dto';
 
 @Injectable()
 export class PoolsService {
   private readonly logger = new Logger(PoolsService.name);
+  private meta: MetaDto = {
+    platforms: [],
+  };
+
   constructor(
     private readonly pancakeSwapService: PancakeSwapService,
     private readonly chainsService: ChainsService,
@@ -39,43 +44,54 @@ export class PoolsService {
 
       return {
         data: poolItems as never as PoolItemDto[],
+        meta: this.meta,
       };
     } catch (error) {
       console.error('Error fetching pools items:', error);
       return {
         data: [],
+        meta: {
+          platforms: [],
+        },
       };
     }
   }
 
-  async getPoolsItems(): Promise<PoolsResponseDto> {
-    const data = await this.poolsRepository.findAll();
+  async getPoolsItems(query: PoolRequest): Promise<PoolsResponseDto> {
+    const data = await this.poolsRepository.findAll(query);
 
-    console.log(
-      data.length,
-      'getPoolsItemsgetPoolsItemsgetPoolsItemsgetPoolsItems',
-    );
-
-    if (!data.length) {
+    if (!data.length && !Object.keys(query?.filter || {}).length) {
       const poolsData = await this.savePoolItemsInDb();
 
-      console.log(
-        poolsData.data.length,
-        'savePoolItemsInDbsavePoolItemsInDbsavePoolItemsInDb',
-      );
-
-      return {
-        data: poolsData.data,
-      };
+      return poolsData;
     }
 
-    return { data };
+    if (!this.meta.platforms.length) {
+      await this.collectMeta();
+    }
+
+    return { data, meta: this.meta };
   }
 
   async savePoolItemsInDb() {
     const poolsData = await this.getPoolsItemsJob();
     await this.poolsRepository.saveMany(poolsData.data);
 
-    return poolsData;
+    this.collectMeta(poolsData.data);
+
+    return {
+      data: poolsData.data,
+      meta: this.meta,
+    };
+  }
+
+  private async collectMeta(data?: PoolItemDto[]) {
+    if (!data) {
+      data = await this.poolsRepository.findAll({});
+    }
+
+    this.meta.platforms = Array.from(
+      new Set(data.map((item) => item.platform.name)),
+    );
   }
 }

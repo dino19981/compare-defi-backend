@@ -13,7 +13,7 @@ import { EarnItemTokenDto } from './EarnItemToken.dto';
 import { EarnItemPlatformDto } from './EarnItemPlatform.dto';
 import { EarnItemRateSettingsDto } from './EarnItemRateSettings.dto';
 import { EarnItemBadge } from '../types/EarnItem';
-import { EarnSort } from './EarnSort.dto';
+import { SortAndFilters } from 'src/shared/dtos/sortAndFilters.dto';
 
 export class EarnItemDto {
   @ApiProperty({ description: 'Уникальный идентификатор', example: 'earn_001' })
@@ -106,14 +106,4 @@ export class EarnResponseDto {
   data: EarnItemDto[];
 }
 
-export class EarnRequest {
-  @ApiProperty({ description: 'Сортировка', nullable: true })
-  @ValidateNested()
-  @Type(() => EarnSort)
-  sort?: EarnSort;
-
-  @ApiProperty({ description: 'Фильтрация', nullable: true })
-  // @ValidateNested()
-  // @Type(() => ({}))
-  filter?: Record<string, any>;
-}
+export class EarnRequest extends SortAndFilters {}

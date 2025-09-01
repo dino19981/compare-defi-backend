@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { PoolEntity } from './pools.entity';
 import { PoolItemDto } from './dtos/pool.dto';
+import { PoolRequest } from './dtos/poolRequest.dto';
+import { getSqlRequestForTokensFilter } from './helpers';
 
 @Injectable()
 export class PoolsRepository {
@@ -11,25 +13,30 @@ export class PoolsRepository {
     private readonly earnRepository: Repository<PoolEntity>,
   ) {}
 
-  async findAll(): Promise<PoolItemDto[]> {
-    const data = await this.earnRepository.find();
+  async findAll(query: PoolRequest): Promise<PoolItemDto[]> {
+    console.log('Получен запрос:', JSON.stringify(query, null, 2));
+
+    const queryBuilder = this.earnRepository.createQueryBuilder('pool');
+
+    if (query.filter) {
+      this.applyFilters(queryBuilder, query.filter);
+    }
+
+    if (query.sort) {
+      queryBuilder.orderBy(
+        query.sort.field,
+        query.sort.direction.toUpperCase() as unknown as 'ASC' | 'DESC',
+      );
+    }
+
+    // queryBuilder.limit(query.limit);
+
+    const data = await queryBuilder.getMany();
+
+    console.log(data.length, 'data');
 
     return data.map((item) => this.formatToPoolItem(item));
   }
-
-  // async findByPlatform(platform: string): Promise<EarnEntity[]> {
-  //   return this.earnRepository.find({
-  //     where: { platform, isActive: true },
-  //     order: { rate: 'DESC' },
-  //   });
-  // }
-
-  // async findByToken(token: string): Promise<EarnEntity[]> {
-  //   return this.earnRepository.find({
-  //     where: { token, isActive: true },
-  //     order: { rate: 'DESC' },
-  //   });
-  // }
 
   async saveMany(data: PoolItemDto[]): Promise<PoolItemDto[]> {
     // const entities = data.map((item) => this.formatToEarnEntity(item));
@@ -67,6 +74,29 @@ export class PoolsRepository {
   //     .orderBy('earn.createdAt', 'DESC')
   //     .getMany() as Promise<EarnItemDto[]>;
   // }
+
+  private applyFilters(
+    queryBuilder: SelectQueryBuilder<PoolEntity>,
+    filters: Record<string, any>,
+  ): void {
+    console.log('Применяем фильтры:', JSON.stringify(filters, null, 2));
+
+    getSqlRequestForTokensFilter(filters, queryBuilder);
+
+    if (filters.chains && filters.chains.length > 0) {
+      queryBuilder.andWhere("LOWER(pool.chain->>'name') IN (:...chains)", {
+        chains: filters.chains,
+      });
+    }
+
+    if (filters.platforms && filters.platforms.length > 0) {
+      queryBuilder.andWhere("pool.platform->>'name' IN (:...platforms)", {
+        platforms: filters.platforms,
+      });
+    }
+
+    // console.log(queryBuilder.getQueryAndParameters(), 'all filters');
+  }
 
   private formatToPoolItem(item: PoolEntity): PoolItemDto {
     return {

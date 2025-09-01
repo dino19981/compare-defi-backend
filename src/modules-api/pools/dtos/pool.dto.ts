@@ -10,7 +10,7 @@ import {
 } from 'class-validator';
 import { PoolItemChainDto } from './poolItemChain.dto';
 import { PoolItemPlatformDto } from './poolItemPlatformDto.dto';
-import { PoolItemBadge } from '../types';
+import { PoolItemBadge, PoolPlatform } from '../types';
 import { PoolItemTokenDto } from './poolItemToken.dto';
 
 export class PoolItemDto {
@@ -18,33 +18,40 @@ export class PoolItemDto {
   @IsString()
   id: string;
 
+  @ApiProperty({ description: 'Первый токен' })
   @ValidateNested()
   @Type(() => PoolItemTokenDto)
   firstToken: PoolItemTokenDto;
 
+  @ApiProperty({ description: 'Второй токен' })
   @ValidateNested()
   @Type(() => PoolItemTokenDto)
   secondToken: PoolItemTokenDto;
 
+  @ApiProperty({ description: 'Сеть' })
   @ValidateNested()
   @Type(() => PoolItemChainDto)
   chain: PoolItemChainDto;
 
+  @ApiProperty({ description: 'Платформа' })
   @ValidateNested()
   @Type(() => PoolItemPlatformDto)
   platform: PoolItemPlatformDto;
 
+  @ApiProperty({ description: 'TVL' })
   @IsNumber()
   tvl: string;
 
   @IsNumber()
   volume: string;
 
+  @ApiProperty({ description: 'Комиссия' })
   @IsNumber()
   fee: string;
 
+  @ApiProperty({ description: 'APR' })
   @IsNumber()
-  apr: string;
+  apr: number;
 
   @ApiProperty({
     description: 'Бейджи',
@@ -59,6 +66,16 @@ export class PoolItemDto {
   badges?: PoolItemBadge[];
 }
 
+export class MetaDto {
+  @ApiProperty({
+    description: 'Платформы',
+    type: [String],
+    enum: PoolPlatform,
+    example: [],
+  })
+  platforms: PoolPlatform[];
+}
+
 export class PoolsResponseDto {
   @ApiProperty({
     description: 'Список пулов',
@@ -69,4 +86,15 @@ export class PoolsResponseDto {
   @ValidateNested({ each: true })
   @Type(() => PoolItemDto)
   data: PoolItemDto[];
+
+  @ApiProperty({
+    description: 'Мета',
+    type: MetaDto,
+    example: {
+      platforms: [PoolPlatform.PancakeSwap, PoolPlatform.Uniswap],
+    },
+  })
+  @ValidateNested()
+  @Type(() => MetaDto)
+  meta: MetaDto;
 }

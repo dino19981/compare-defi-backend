@@ -1,7 +1,7 @@
 import { DataSource } from 'typeorm';
 import { config } from 'dotenv';
 import { EarnEntity } from './src/modules-api/earn/earn.entity';
-// import { PoolEntity } from './src/entities/pool.entity';
+import { PoolEntity } from './src/modules-api/pools/pools.entity';
 
 // Загружаем переменные окружения
 config();
@@ -13,11 +13,11 @@ export default new DataSource({
   username: process.env.DB_USER || 'compare_defi_user',
   password: process.env.DB_PASSWORD || 'compare_defi_password',
   database: process.env.DB_NAME || 'compare_defi_db',
-  entities: [EarnEntity],
-  //   entities: [EarnEntity, PoolEntity],
+  entities: [EarnEntity, PoolEntity],
   migrations: [__dirname + '/src/migrations/*.ts'],
   synchronize: false,
-  logging: process.env.NODE_ENV !== 'production',
+  // logging: process.env.NODE_ENV !== 'production',
+  logging: false, // Отключаем логирование SQL запросов
   ssl:
     process.env.NODE_ENV === 'production'
       ? { rejectUnauthorized: false }

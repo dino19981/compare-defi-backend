@@ -5,15 +5,18 @@ import { PoolItemPlatformDto } from './dtos/poolItemPlatformDto.dto';
 import { PoolItemBadge } from './types';
 
 @Entity('pools_data')
-@Index(['id'])
+@Index('IDX_FIRST_TOKEN_NAME', { synchronize: false })
+@Index('IDX_SECOND_TOKEN_NAME', { synchronize: false })
+@Index('IDX_CHAIN_NAME', { synchronize: false })
+@Index('IDX_PLATFORM_NAME', { synchronize: false })
 export class PoolEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'json' })
+  @Column({ type: 'json', name: 'firstToken' })
   firstToken: PoolItemTokenDto;
 
-  @Column({ type: 'json' })
+  @Column({ type: 'json', name: 'secondToken' })
   secondToken: PoolItemTokenDto;
 
   @Column({ type: 'json' })
@@ -31,8 +34,8 @@ export class PoolEntity {
   @Column({ type: 'varchar' })
   fee: string;
 
-  @Column({ type: 'varchar' })
-  apr: string;
+  @Column({ type: 'decimal', precision: 10, scale: 4 })
+  apr: number;
 
   @Column({
     type: 'simple-array',

@@ -137,9 +137,8 @@ export class EarnService {
   async getEarnItems(query: EarnRequest): Promise<EarnResponseDto> {
     try {
       const earnItems = await this.earnRepository.findAll(query);
-      console.log(earnItems.length, 'earnItemsearnItemsearnItemsearnItems');
 
-      if (!earnItems.length) {
+      if (!earnItems.length && !Object.keys(query?.filter || {}).length) {
         const earnData = await this.saveEarnItemsInDb();
 
         return {

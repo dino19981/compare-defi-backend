@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { EarnEntity } from './earn.entity';
 import { EarnPlatform } from './types';
 import { EarnItemDto, EarnRequest } from './dtos/earn.dto';
@@ -14,16 +14,42 @@ export class EarnRepository {
   ) {}
 
   async findAll(query: EarnRequest): Promise<EarnItemDto[]> {
+    const where =
+      query.filter && Object.keys(query.filter).length
+        ? Object.fromEntries(
+            Object.entries(query.filter).map(([key, value]) => {
+              if (Array.isArray(value)) {
+                return [key, In(value)];
+              }
+
+              return [key, value];
+            }),
+          )
+        : undefined;
+
     const data = await this.earnRepository.find({
-      ...(query.filter && {
-        where: query.filter,
-      }),
-      ...(query.sort && {
-        order: {
-          [query.sort?.field as keyof EarnItemDto]: query.sort?.direction,
-        },
-      }),
+      ...(where && { where }),
+      ...(query.sort &&
+        Object.keys(query.sort).length && {
+          order: {
+            [query.sort?.field as keyof EarnItemDto]: query.sort.direction,
+          },
+        }),
     });
+
+    console.log(
+      query,
+      {
+        ...(where && { where }),
+        ...(query.sort &&
+          Object.keys(query.sort).length && {
+            order: {
+              [query.sort?.field as keyof EarnItemDto]: query.sort.direction,
+            },
+          }),
+      },
+      'wqeqweqweqweqweq',
+    );
 
     return data.map((item) => this.formatToEarnItem(item));
   }

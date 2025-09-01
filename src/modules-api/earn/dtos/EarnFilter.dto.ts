@@ -1,15 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { IsString, IsEnum } from 'class-validator';
 import { SortDirection } from 'src/shared/types';
 
 export class EarnFilter {
+  @ApiProperty({
+    description: 'Поле для фильтрации',
+    example: 'maxRate',
+  })
   @IsString()
   field: string;
 
   @ApiProperty({
-    example: '-1',
+    description: 'Направление сортировки',
     enum: SortDirection,
+    example: SortDirection.Desc,
   })
-  @IsString()
+  @IsEnum(SortDirection)
   direction: SortDirection;
 }
