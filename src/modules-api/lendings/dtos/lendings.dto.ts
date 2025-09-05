@@ -8,12 +8,12 @@ import {
   IsOptional,
   IsEnum,
 } from 'class-validator';
+import { LendingPlatformDto } from './lendingPlatformDto.dto';
+import { PoolItemBadge, LendingPlatform } from '../types';
+import { PoolItemTokenDto } from './lendingToken.dto';
 import { ChainDto } from 'src/shared/dtos/chain.dto';
-import { PoolItemPlatformDto } from './poolItemPlatformDto.dto';
-import { PoolItemBadge, PoolPlatform } from '../types';
-import { PoolItemTokenDto } from './poolItemToken.dto';
 
-export class PoolItemDto {
+export class LandingDto {
   @ApiProperty({ description: 'Уникальный идентификатор', example: 'pool_001' })
   @IsString()
   id: string;
@@ -35,8 +35,8 @@ export class PoolItemDto {
 
   @ApiProperty({ description: 'Платформа' })
   @ValidateNested()
-  @Type(() => PoolItemPlatformDto)
-  platform: PoolItemPlatformDto;
+  @Type(() => LendingPlatformDto)
+  platform: LendingPlatformDto;
 
   @ApiProperty({ description: 'TVL' })
   @IsNumber()
@@ -70,28 +70,28 @@ export class MetaDto {
   @ApiProperty({
     description: 'Платформы',
     type: [String],
-    enum: PoolPlatform,
+    enum: LendingPlatform,
     example: [],
   })
-  platforms: PoolPlatform[];
+  platforms: LendingPlatform[];
 }
 
 export class PoolsResponseDto {
   @ApiProperty({
     description: 'Список пулов',
-    type: [PoolItemDto],
+    type: [LandingDto],
     example: [],
   })
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => PoolItemDto)
-  data: PoolItemDto[];
+  @Type(() => LandingDto)
+  data: LandingDto[];
 
   @ApiProperty({
     description: 'Мета',
     type: MetaDto,
     example: {
-      platforms: [PoolPlatform.PancakeSwap, PoolPlatform.Uniswap],
+      platforms: [LendingPlatform.PancakeSwap, LendingPlatform.Uniswap],
     },
   })
   @ValidateNested()

@@ -1,11 +1,18 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { MetaDto, PoolItemDto, PoolsResponseDto } from './dtos/pool.dto';
 import { PancakeSwapService } from '@modules/pancakeSwap';
-import { formatPancakeSwapPools, formatUniSwapPools } from './formatters';
+import {
+  formatCetusPools,
+  formatPancakeSwapPools,
+  formatUniSwapPools,
+} from './formatters';
 import { Chains, ChainsService } from 'src/shared/modules/chains';
 import { UniSwapService } from '@modules/uniswap';
 import { PoolsRepository } from './pools.repository';
 import { PoolRequest } from './dtos/poolRequest.dto';
+import { CetusService } from '@modules/cetus';
+import { RaydiumService } from '@modules/raydium';
+import { formatRaydiumPools } from './formatters/formatRaydiumPools';
 
 @Injectable()
 export class PoolsService {
@@ -19,15 +26,19 @@ export class PoolsService {
     private readonly chainsService: ChainsService,
     private readonly uniSwapService: UniSwapService,
     private readonly poolsRepository: PoolsRepository,
+    private readonly cetusService: CetusService,
+    private readonly raydiumService: RaydiumService,
   ) {}
 
   async getPoolsItemsJob(): Promise<PoolsResponseDto> {
     try {
-      const [chainsData, pancakeSwapData, uniSwapData] =
+      const [chainsData, pancakeSwapData, uniSwapData, cetusData, raydiumData] =
         await Promise.allSettled([
           this.chainsService.getChains(),
           this.pancakeSwapService.getPoolsItems(),
           this.uniSwapService.getPoolsItems(),
+          this.cetusService.getPoolsItems(),
+          this.raydiumService.getPoolsItems(),
         ]);
 
       const { chainById, chainByName } =
@@ -39,6 +50,12 @@ export class PoolsService {
           : []),
         ...(uniSwapData.status === 'fulfilled'
           ? formatUniSwapPools(uniSwapData.value, chainByName)
+          : []),
+        ...(cetusData.status === 'fulfilled'
+          ? formatCetusPools(cetusData.value, chainByName)
+          : []),
+        ...(raydiumData.status === 'fulfilled'
+          ? formatRaydiumPools(raydiumData.value, chainByName)
           : []),
       ];
 

@@ -43,9 +43,11 @@ export class ChainsService {
       (chain) => chain.chain_identifier !== null,
     ) as Chain[];
 
+    const _chains = chains as Chain[];
+
     return {
       chainById: keyBy(filteredChains, 'chain_identifier'),
-      chainByName: filteredChains.reduce(
+      chainByName: _chains.reduce(
         (acc, chain) => {
           acc[
             chain.shortname

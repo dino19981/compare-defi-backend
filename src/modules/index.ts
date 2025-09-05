@@ -5,3 +5,5 @@ export * from './kukoin';
 export * from './htx';
 export * from './bitget';
 export * from './bingX';
+export * from './cetus';
+export * from './raydium';

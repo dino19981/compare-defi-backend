@@ -8,6 +8,8 @@ import { PoolsRepository } from './pools.repository';
 import { DatabaseModule } from '@modules/database';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PoolEntity } from './pools.entity';
+import { CetusModule } from '@modules/cetus';
+import { RaydiumModule } from '@modules/raydium';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { PoolEntity } from './pools.entity';
     PancakeSwapModule,
     ChainsModule,
     UniSwapModule,
+    CetusModule,
+    RaydiumModule,
   ],
   controllers: [PoolsController],
   providers: [PoolsService, PoolsRepository],

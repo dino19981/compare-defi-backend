@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
 
-export class PoolItemChainDto {
+export class ChainDto {
   @ApiProperty({ description: 'Название сети', example: 'Eth' })
   @IsString()
   name: string;

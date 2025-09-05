@@ -1,0 +1,30 @@
+import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { LandingPlatform } from '../types';
+import { ApiProperty } from '@nestjs/swagger';
+
+export class LendingPlatformDto {
+  @ApiProperty({
+    description: 'Название платформы',
+    example: 'Uniswap',
+    type: String,
+    enum: LandingPlatform,
+  })
+  @IsString()
+  @IsEnum(LandingPlatform, { each: true })
+  name: LandingPlatform;
+
+  @ApiProperty({
+    description: 'Ссылка на платформу',
+    example: 'https://uniswap.org',
+  })
+  @IsString()
+  link: string;
+
+  @ApiProperty({
+    description: 'Ссылка на платформу с рефкой',
+    example: 'https://uniswap.org/ref/CPA_00CR5Q0KBD',
+  })
+  @IsOptional()
+  @IsString()
+  refLink: string;
+}

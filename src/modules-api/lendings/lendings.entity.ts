@@ -1,8 +1,8 @@
 import { Entity, PrimaryGeneratedColumn, Column, Index } from 'typeorm';
-import { PoolItemTokenDto } from './dtos/poolItemToken.dto';
-import { PoolItemPlatformDto } from './dtos/poolItemPlatformDto.dto';
+import { PoolItemTokenDto } from './dtos/lendingToken.dto';
+import { PoolItemChainDto } from './dtos/poolItemChain.dto';
+import { PoolItemPlatformDto } from './dtos/lendingPlatformDto.dto';
 import { PoolItemBadge } from './types';
-import { ChainDto } from 'src/shared/dtos/chain.dto';
 
 @Entity('pools_data')
 @Index('IDX_FIRST_TOKEN_NAME', { synchronize: false })
@@ -20,7 +20,7 @@ export class PoolEntity {
   secondToken: PoolItemTokenDto;
 
   @Column({ type: 'json' })
-  chain: ChainDto;
+  chain: PoolItemChainDto;
 
   @Column({ type: 'json' })
   platform: PoolItemPlatformDto;

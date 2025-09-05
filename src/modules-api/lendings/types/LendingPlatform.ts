@@ -1,4 +1,4 @@
-export enum PoolPlatform {
+export enum LendingPlatform {
   PancakeSwap = 'PancakeSwap',
   Uniswap = 'Uniswap',
   Cetus = 'Cetus',
