@@ -13,7 +13,7 @@ import { PoolItemBadge, LendingPlatform } from '../types';
 import { PoolItemTokenDto } from './lendingToken.dto';
 import { ChainDto } from 'src/shared/dtos/chain.dto';
 
-export class LandingDto {
+export class LendingDto {
   @ApiProperty({ description: 'Уникальный идентификатор', example: 'pool_001' })
   @IsString()
   id: string;
@@ -76,16 +76,16 @@ export class MetaDto {
   platforms: LendingPlatform[];
 }
 
-export class PoolsResponseDto {
+export class LendingResponseDto {
   @ApiProperty({
-    description: 'Список пулов',
-    type: [LandingDto],
+    description: 'Список лендингов',
+    type: [LendingDto],
     example: [],
   })
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => LandingDto)
-  data: LandingDto[];
+  @Type(() => LendingDto)
+  data: LendingDto[];
 
   @ApiProperty({
     description: 'Мета',

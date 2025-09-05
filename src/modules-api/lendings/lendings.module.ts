@@ -1,15 +1,15 @@
 import { Module } from '@nestjs/common';
-import { LandingsController } from './lendings.controller';
-import { LandingsService } from './lendings.service';
-import { LandingsRepository } from './lendings.repository';
+import { LendingsController } from './lendings.controller';
+import { LendingsService } from './lendings.service';
+import { LendingsRepository } from './lendings.repository';
 import { DatabaseModule } from '@modules/database';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PoolEntity } from './lendings.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([PoolEntity]), DatabaseModule],
-  controllers: [LandingsController],
-  providers: [LandingsService, LandingsRepository],
-  exports: [LandingsService],
+  controllers: [LendingsController],
+  providers: [LendingsService, LendingsRepository],
+  exports: [LendingsService],
 })
-export class LandingsModule {}
+export class LendingsModule {}

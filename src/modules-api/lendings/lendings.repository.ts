@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { PoolEntity } from './lendings.entity';
-import { LendingItemDto } from './dtos/lendings.dto';
-import { PoolRequest } from './dtos/lendingRequest.dto';
+import { LendingDto } from './dtos/lendings.dto';
+import { LendingRequest } from './dtos/lendingRequest.dto';
 import { getSqlRequestForTokensFilter } from './helpers';
 
 @Injectable()
@@ -13,7 +13,7 @@ export class LendingsRepository {
     private readonly lendingsRepository: Repository<PoolEntity>,
   ) {}
 
-  async findAll(query: PoolRequest): Promise<PoolItemDto[]> {
+  async findAll(query: LendingRequest): Promise<LendingDto[]> {
     console.log('Получен запрос:', JSON.stringify(query, null, 2));
 
     const queryBuilder = this.lendingsRepository.createQueryBuilder('pool');
@@ -35,10 +35,10 @@ export class LendingsRepository {
 
     console.log(data.length, 'data');
 
-    return data.map((item) => this.formatToPoolItem(item));
+    return data.map((item) => this.formatToLendingItem(item));
   }
 
-  async saveMany(data: PoolItemDto[]): Promise<PoolItemDto[]> {
+  async saveMany(data: LendingDto[]): Promise<LendingDto[]> {
     // const entities = data.map((item) => this.formatToEarnEntity(item));
 
     const savedEntities = this.lendingsRepository.create(data);
@@ -98,7 +98,7 @@ export class LendingsRepository {
     // console.log(queryBuilder.getQueryAndParameters(), 'all filters');
   }
 
-  private formatToPoolItem(item: PoolEntity): PoolItemDto {
+  private formatToLendingItem(item: PoolEntity): LendingDto {
     return {
       id: item.id,
       firstToken: {

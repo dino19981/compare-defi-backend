@@ -1,5 +1,5 @@
 import { IsEnum, IsOptional, IsString } from 'class-validator';
-import { LandingPlatform } from '../types';
+import { LendingPlatform } from '../types';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class LendingPlatformDto {
@@ -7,11 +7,11 @@ export class LendingPlatformDto {
     description: 'Название платформы',
     example: 'Uniswap',
     type: String,
-    enum: LandingPlatform,
+    enum: LendingPlatform,
   })
   @IsString()
-  @IsEnum(LandingPlatform, { each: true })
-  name: LandingPlatform;
+  @IsEnum(LendingPlatform, { each: true })
+  name: LendingPlatform;
 
   @ApiProperty({
     description: 'Ссылка на платформу',

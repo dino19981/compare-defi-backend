@@ -94,7 +94,7 @@ export class PoolsService {
     const poolsData = await this.getPoolsItemsJob();
     await this.poolsRepository.saveMany(poolsData.data);
 
-    this.collectMeta(poolsData.data);
+    await this.collectMeta(poolsData.data);
 
     return {
       data: poolsData.data,

@@ -1,32 +1,32 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { LandingsService } from './lendings.service';
-import { PoolsResponseDto } from './dtos/lendings.dto';
+import { LendingsService } from './lendings.service';
+import { LendingResponseDto } from './dtos/lendings.dto';
 import { SwaggerSchemaDecorator } from '../../decorators';
-import { PoolRequest } from './dtos/lendingRequest.dto';
+import { LendingRequest } from './dtos/lendingRequest.dto';
 
-@ApiTags('pools')
-@Controller('pools')
-export class LandingsController {
-  constructor(private readonly landingsService: LandingsService) {}
+@ApiTags('lending')
+@Controller('lending')
+export class LendingsController {
+  constructor(private readonly lendingsService: LendingsService) {}
 
   @Get()
   @SwaggerSchemaDecorator({
-    schemaQuery: PoolRequest,
-    schemaResponse: PoolsResponseDto,
+    schemaQuery: LendingRequest,
+    schemaResponse: LendingResponseDto,
     description: 'Получить список лэндингов',
   })
-  getPoolItems(@Query() query: PoolRequest): Promise<PoolsResponseDto> {
-    return this.landingsService.getLandingsItems(query);
+  getPoolItems(@Query() query: LendingRequest): Promise<LendingResponseDto> {
+    return this.lendingsService.getLendingItems(query);
   }
 
   @Get('without-job')
   @SwaggerSchemaDecorator({
-    schemaQuery: PoolRequest,
-    schemaResponse: PoolsResponseDto,
+    schemaQuery: LendingRequest,
+    schemaResponse: LendingResponseDto,
     description: 'Получить список лэндингов без job',
   })
-  getPoolsItemsWithoutJob(): Promise<PoolsResponseDto> {
-    return this.landingsService.getLandingsItemsJob();
+  getPoolsItemsWithoutJob(): Promise<LendingResponseDto> {
+    return this.lendingsService.getLendingItemsJob();
   }
 }

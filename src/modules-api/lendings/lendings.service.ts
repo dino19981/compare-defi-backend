@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { MetaDto, PoolItemDto, PoolsResponseDto } from './dtos/lendings.dto';
+import { MetaDto, LendingDto, LendingResponseDto } from './dtos/lendings.dto';
 import { Chains, ChainsService } from 'src/shared/modules/chains';
-import { PoolRequest } from './dtos/lendingRequest.dto';
-import { LandingsRepository } from './lendings.repository';
+import { LendingRequest } from './dtos/lendingRequest.dto';
+import { LendingsRepository } from './lendings.repository';
 
 @Injectable()
 export class LendingsService {
@@ -13,10 +13,10 @@ export class LendingsService {
 
   constructor(
     private readonly chainsService: ChainsService,
-    private readonly landingsRepository: LandingsRepository,
+    private readonly lendingsRepository: LendingsRepository,
   ) {}
 
-  async getLandingsItemsJob(): Promise<PoolsResponseDto> {
+  async getLendingItemsJob(): Promise<LendingResponseDto> {
     try {
       const [chainsData] = await Promise.allSettled([
         this.chainsService.getChains(),
@@ -25,14 +25,14 @@ export class LendingsService {
       const { chainById, chainByName } =
         chainsData.status === 'fulfilled' ? chainsData.value : ({} as Chains);
 
-      const poolItems = [];
+      const lendingItems = [];
 
       return {
-        data: poolItems as never as PoolItemDto[],
+        data: lendingItems as never as LendingDto[],
         meta: this.meta,
       };
     } catch (error) {
-      console.error('Error fetching pools items:', error);
+      console.error('Error fetching lending items:', error);
       return {
         data: [],
         meta: {
@@ -42,13 +42,13 @@ export class LendingsService {
     }
   }
 
-  async getLandingsItems(query: PoolRequest): Promise<PoolsResponseDto> {
-    const data = await this.landingsRepository.findAll(query);
+  async getLendingItems(query: LendingRequest): Promise<LendingResponseDto> {
+    const data = await this.lendingsRepository.findAll(query);
 
     if (!data.length && !Object.keys(query?.filter || {}).length) {
-      const poolsData = await this.saveLandingsItemsInDb();
+      const lendingData = await this.saveLendingItemsInDb();
 
-      return poolsData;
+      return lendingData;
     }
 
     if (!this.meta.platforms.length) {
@@ -58,21 +58,21 @@ export class LendingsService {
     return { data, meta: this.meta };
   }
 
-  async saveLandingsItemsInDb() {
-    const poolsData = await this.getLandingsItemsJob();
-    await this.landingsRepository.saveMany(poolsData.data);
+  async saveLendingItemsInDb() {
+    const lendingData = await this.getLendingItemsJob();
+    await this.lendingsRepository.saveMany(lendingData.data);
 
-    this.collectMeta(poolsData.data);
+    await this.collectMeta(lendingData.data);
 
     return {
-      data: poolsData.data,
+      data: lendingData.data,
       meta: this.meta,
     };
   }
 
-  private async collectMeta(data?: PoolItemDto[]) {
+  private async collectMeta(data?: LendingDto[]) {
     if (!data) {
-      data = await this.landingsRepository.findAll({});
+      data = await this.lendingsRepository.findAll({});
     }
 
     this.meta.platforms = Array.from(
