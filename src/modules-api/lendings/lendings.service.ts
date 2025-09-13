@@ -1,8 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { MetaDto, LendingDto, LendingResponseDto } from './dtos/lendings.dto';
-import { Chains, ChainsService } from 'src/shared/modules/chains';
 import { LendingRequest } from './dtos/lendingRequest.dto';
 import { LendingsRepository } from './lendings.repository';
+import { AaveClient } from '@aave/client';
+import { AaveService } from '@modules/aave';
+import { formatAave } from './formatters';
+
+export const client = AaveClient.create();
 
 @Injectable()
 export class LendingsService {
@@ -12,27 +16,30 @@ export class LendingsService {
   };
 
   constructor(
-    private readonly chainsService: ChainsService,
     private readonly lendingsRepository: LendingsRepository,
+    private readonly aaveService: AaveService,
   ) {}
 
   async getLendingItemsJob(): Promise<LendingResponseDto> {
     try {
-      const [chainsData] = await Promise.allSettled([
-        this.chainsService.getChains(),
+      const [aaveData] = await Promise.allSettled([
+        this.aaveService.getLendingItems(),
       ]);
 
-      const { chainById, chainByName } =
-        chainsData.status === 'fulfilled' ? chainsData.value : ({} as Chains);
+      const data = [
+        ...(aaveData.status === 'fulfilled' ? formatAave(aaveData.value) : []),
+      ];
 
-      const lendingItems = [];
+      // const { chainById, chainByName } =
+      //   chainsData.status === 'fulfilled' ? chainsData.value : ({} as Chains);
 
       return {
-        data: lendingItems as never as LendingDto[],
+        data: data as never as LendingDto[],
         meta: this.meta,
       };
     } catch (error) {
       console.error('Error fetching lending items:', error);
+
       return {
         data: [],
         meta: {

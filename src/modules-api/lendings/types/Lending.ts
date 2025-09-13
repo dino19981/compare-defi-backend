@@ -1,41 +1,33 @@
-import { LendingPlatform } from './LendingPlatform';
+import { LendingPlatformName } from './LendingPlatformName';
 
 export interface Lending {
   id: string;
 
-  firstToken: PoolItemToken;
-  secondToken: PoolItemToken;
+  token: LendingToken;
+  chain: LendingChain;
+  platform: LendingPlatform;
 
-  chain: PoolItemChain;
+  totalSupplied: number;
+  supplyAPY: number;
 
-  platform: PoolItemPlatform;
+  totalBorrowed: number;
+  borrowAPY: number;
 
-  tvl: number;
-  volume: number;
-  fee: number;
-
-  apr: number;
-
-  badges?: PoolItemBadge[];
+  badges?: string[];
 }
 
-export interface PoolItemToken {
+export interface LendingToken {
   name: string;
   imageUrl: string;
 }
 
-export interface PoolItemPlatform {
-  name: LendingPlatform;
+export interface LendingPlatform {
+  name: LendingPlatformName;
   link: string;
   refLink?: string;
 }
 
-export enum PoolItemBadge {
-  SmallLimit = 'smallLimit',
-  ForNewUsers = 'forNewUsers',
-}
-
-export interface PoolItemChain {
+export interface LendingChain {
   name: string;
   imageUrl: string;
 }

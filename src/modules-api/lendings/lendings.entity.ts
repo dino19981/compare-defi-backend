@@ -1,45 +1,37 @@
-import { Entity, PrimaryGeneratedColumn, Column, Index } from 'typeorm';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Types } from 'mongoose';
 import { PoolItemTokenDto } from './dtos/lendingToken.dto';
-import { PoolItemChainDto } from './dtos/poolItemChain.dto';
-import { PoolItemPlatformDto } from './dtos/lendingPlatformDto.dto';
-import { PoolItemBadge } from './types';
 
-@Entity('pools_data')
-@Index('IDX_FIRST_TOKEN_NAME', { synchronize: false })
-@Index('IDX_SECOND_TOKEN_NAME', { synchronize: false })
-@Index('IDX_CHAIN_NAME', { synchronize: false })
-@Index('IDX_PLATFORM_NAME', { synchronize: false })
-export class PoolEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+export type LendingDocument = LendingEntity & { _id: Types.ObjectId };
 
-  @Column({ type: 'json', name: 'firstToken' })
+@Schema({ collection: 'lendings_data' })
+export class LendingEntity {
+  @Prop({ type: Object, required: true })
   firstToken: PoolItemTokenDto;
 
-  @Column({ type: 'json', name: 'secondToken' })
+  @Prop({ type: Object, required: true })
   secondToken: PoolItemTokenDto;
 
-  @Column({ type: 'json' })
-  chain: PoolItemChainDto;
-
-  @Column({ type: 'json' })
-  platform: PoolItemPlatformDto;
-
-  @Column({ type: 'varchar' })
+  @Prop({ type: String, required: true })
   tvl: string;
 
-  @Column({ type: 'varchar' })
+  @Prop({ type: String, required: true })
   volume: string;
 
-  @Column({ type: 'varchar' })
+  @Prop({ type: String, required: true })
   fee: string;
 
-  @Column({ type: 'decimal', precision: 10, scale: 4 })
+  @Prop({ type: Number, required: true })
   apr: number;
 
-  @Column({
-    type: 'simple-array',
-    nullable: true,
-  })
-  badges?: PoolItemBadge[];
+  @Prop({ type: [String], default: [] })
+  badges?: string[];
 }
+
+export const LendingSchema = SchemaFactory.createForClass(LendingEntity);
+
+// Создаем индексы для оптимизации поиска
+LendingSchema.index({ 'firstToken.name': 1 });
+LendingSchema.index({ 'secondToken.name': 1 });
+LendingSchema.index({ apr: -1 });
+LendingSchema.index({ tvl: -1 });

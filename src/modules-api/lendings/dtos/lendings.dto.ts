@@ -6,10 +6,9 @@ import {
   ValidateNested,
   IsNumber,
   IsOptional,
-  IsEnum,
 } from 'class-validator';
-import { LendingPlatformDto } from './lendingPlatformDto.dto';
-import { PoolItemBadge, LendingPlatform } from '../types';
+import { LendingPlatformNameDto } from './lendingPlatformDto.dto';
+import { LendingPlatformName } from '../types';
 import { PoolItemTokenDto } from './lendingToken.dto';
 import { ChainDto } from 'src/shared/dtos/chain.dto';
 
@@ -35,8 +34,8 @@ export class LendingDto {
 
   @ApiProperty({ description: 'Платформа' })
   @ValidateNested()
-  @Type(() => LendingPlatformDto)
-  platform: LendingPlatformDto;
+  @Type(() => LendingPlatformNameDto)
+  platform: LendingPlatformNameDto;
 
   @ApiProperty({ description: 'TVL' })
   @IsNumber()
@@ -56,24 +55,22 @@ export class LendingDto {
   @ApiProperty({
     description: 'Бейджи',
     type: [String],
-    enum: PoolItemBadge,
     example: [],
     required: false,
   })
   @IsArray()
   @IsOptional()
-  @IsEnum(PoolItemBadge, { each: true })
-  badges?: PoolItemBadge[];
+  badges?: string[];
 }
 
 export class MetaDto {
   @ApiProperty({
     description: 'Платформы',
     type: [String],
-    enum: LendingPlatform,
+    enum: LendingPlatformName,
     example: [],
   })
-  platforms: LendingPlatform[];
+  platforms: LendingPlatformName[];
 }
 
 export class LendingResponseDto {
@@ -91,7 +88,7 @@ export class LendingResponseDto {
     description: 'Мета',
     type: MetaDto,
     example: {
-      platforms: [LendingPlatform.PancakeSwap, LendingPlatform.Uniswap],
+      platforms: [LendingPlatformName.Aave],
     },
   })
   @ValidateNested()

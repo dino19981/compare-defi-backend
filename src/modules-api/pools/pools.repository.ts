@@ -1,49 +1,33 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
-import { PoolEntity } from './pools.entity';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { PoolEntity, PoolDocument } from './pools.entity';
 import { PoolItemDto } from './dtos/pool.dto';
 import { PoolRequest } from './dtos/poolRequest.dto';
-import { getSqlRequestForTokensFilter } from './helpers';
 
 @Injectable()
 export class PoolsRepository {
   constructor(
-    @InjectRepository(PoolEntity)
-    private readonly earnRepository: Repository<PoolEntity>,
+    @InjectModel(PoolEntity.name)
+    private readonly poolsModel: Model<PoolDocument>,
   ) {}
 
   async findAll(query: PoolRequest): Promise<PoolItemDto[]> {
     console.log('Получен запрос:', JSON.stringify(query, null, 2));
 
-    const queryBuilder = this.earnRepository.createQueryBuilder('pool');
+    const filter = this.buildMongoFilter(query.filter);
+    const sort = this.buildMongoSort(query.sort);
 
-    if (query.filter) {
-      this.applyFilters(queryBuilder, query.filter);
-    }
-
-    if (query.sort) {
-      queryBuilder.orderBy(
-        query.sort.field,
-        query.sort.direction.toUpperCase() as unknown as 'ASC' | 'DESC',
-      );
-    }
-
-    // queryBuilder.limit(query.limit);
-
-    const data = await queryBuilder.getMany();
+    const data = await this.poolsModel.find(filter).sort(sort).exec();
 
     console.log(data.length, 'data');
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return data.map((item) => this.formatToPoolItem(item));
   }
 
   async saveMany(data: PoolItemDto[]): Promise<PoolItemDto[]> {
-    // const entities = data.map((item) => this.formatToEarnEntity(item));
-
-    const savedEntities = this.earnRepository.create(data);
-    await this.earnRepository.save(savedEntities);
-
+    await this.poolsModel.insertMany(data);
     return data;
   }
 
@@ -75,30 +59,42 @@ export class PoolsRepository {
   //     .getMany() as Promise<EarnItemDto[]>;
   // }
 
-  private applyFilters(
-    queryBuilder: SelectQueryBuilder<PoolEntity>,
-    filters: Record<string, any>,
-  ): void {
-    console.log('Применяем фильтры:', JSON.stringify(filters, null, 2));
+  private buildMongoFilter(filters: Record<string, any> | undefined): any {
+    if (!filters) return {};
 
-    getSqlRequestForTokensFilter(filters, queryBuilder);
+    const mongoFilter: any = {};
 
+    // Фильтр по токенам
+    if (filters.tokens && filters.tokens.length > 0) {
+      mongoFilter.$or = [
+        { 'firstToken.name': { $in: filters.tokens } },
+        { 'secondToken.name': { $in: filters.tokens } },
+      ];
+    }
+
+    // Фильтр по сетям
     if (filters.chains && filters.chains.length > 0) {
-      queryBuilder.andWhere("LOWER(pool.chain->>'name') IN (:...chains)", {
-        chains: filters.chains,
-      });
+      mongoFilter['chain.name'] = { $in: filters.chains };
     }
 
+    // Фильтр по платформам
     if (filters.platforms && filters.platforms.length > 0) {
-      queryBuilder.andWhere("pool.platform->>'name' IN (:...platforms)", {
-        platforms: filters.platforms,
-      });
+      mongoFilter['platform.name'] = { $in: filters.platforms };
     }
 
-    // console.log(queryBuilder.getQueryAndParameters(), 'all filters');
+    return mongoFilter;
   }
 
-  private formatToPoolItem(item: PoolEntity): PoolItemDto {
+  private buildMongoSort(
+    sort: { field: string; direction: string } | undefined,
+  ): any {
+    if (!sort) return {};
+
+    const direction = sort.direction.toUpperCase() === 'ASC' ? 1 : -1;
+    return { [sort.field]: direction };
+  }
+
+  private formatToPoolItem(item: PoolDocument): PoolItemDto {
     return {
       id: item.id,
       firstToken: {

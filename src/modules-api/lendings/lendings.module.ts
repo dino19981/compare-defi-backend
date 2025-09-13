@@ -1,13 +1,18 @@
 import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
 import { LendingsController } from './lendings.controller';
 import { LendingsService } from './lendings.service';
 import { LendingsRepository } from './lendings.repository';
-import { DatabaseModule } from '@modules/database';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { PoolEntity } from './lendings.entity';
+import { LendingEntity, LendingSchema } from './lendings.entity';
+import { AaveModule } from '@modules/aave';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([PoolEntity]), DatabaseModule],
+  imports: [
+    MongooseModule.forFeature([
+      { name: LendingEntity.name, schema: LendingSchema },
+    ]),
+    AaveModule,
+  ],
   controllers: [LendingsController],
   providers: [LendingsService, LendingsRepository],
   exports: [LendingsService],

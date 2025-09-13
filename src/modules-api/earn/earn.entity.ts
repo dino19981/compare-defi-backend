@@ -1,65 +1,63 @@
-import { Entity, PrimaryGeneratedColumn, Column, Index } from 'typeorm';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Types } from 'mongoose';
 import { EarnItemLevel, EarnItemBadge } from './types/EarnItem';
+import { EarnItemTokenDto } from './dtos/EarnItemToken.dto';
+import { EarnItemPlatformDto } from './dtos/EarnItemPlatform.dto';
 
-@Entity('earn_data')
-@Index(['platformName', 'maxRate', 'tokenName'])
+@Schema({ collection: 'earn_data' })
 export class EarnEntity {
-  @PrimaryGeneratedColumn('uuid')
+  @Prop({ type: Object, required: true })
   id: string;
 
-  @Column({ type: 'varchar', length: 100, nullable: true })
+  @Prop({ type: String, maxlength: 100 })
   name?: string;
 
-  @Column({ type: 'varchar' })
-  tokenName: string;
+  @Prop({ type: String, required: true })
+  token: EarnItemTokenDto;
 
-  @Column({
-    type: 'enum',
+  @Prop({
+    type: String,
     enum: ['flexible', 'fixed'],
     default: 'flexible',
   })
   periodType: 'flexible' | 'fixed';
 
-  @Column({ type: 'varchar' })
-  platformName: string;
+  @Prop({ type: String, required: true })
+  platform: EarnItemPlatformDto;
 
-  @Column({ type: 'varchar' })
-  platformLink: string;
-
-  @Column({ type: 'varchar', nullable: true })
-  platformRefLink?: string;
-
-  @Column({
-    type: 'enum',
+  @Prop({
+    type: String,
     enum: EarnItemLevel,
     default: EarnItemLevel.Normal,
+    required: true,
   })
   productLevel: EarnItemLevel;
 
-  @Column({ type: 'decimal', precision: 10, scale: 4 })
+  @Prop({ type: Number, required: true })
   maxRate: number;
 
-  @Column({ type: 'json', nullable: true })
+  @Prop({ type: [Object] })
   rateSettings?: Array<{
     min: number;
     max: number | 'Infinity';
     apy: number;
   }>;
 
-  @Column({
-    type: 'varchar',
-    length: 50,
-    transformer: {
-      from: (value: string) =>
-        value === 'Infinity' ? 'Infinity' : Number(value),
-      to: (value: number | 'Infinity') => value.toString(),
-    },
+  @Prop({
+    type: Number || 'Infinity',
+    required: true,
   })
   duration: number | 'Infinity';
 
-  @Column({
-    type: 'simple-array',
-    nullable: true,
-  })
+  @Prop({ type: [EarnItemBadge], default: [] })
   badges?: EarnItemBadge[];
 }
+
+export type EarnDocument = EarnEntity & { _id: Types.ObjectId };
+
+export const EarnSchema = SchemaFactory.createForClass(EarnEntity);
+
+// Создаем индексы для оптимизации поиска
+EarnSchema.index({ platformName: 1, maxRate: -1, tokenName: 1 });
+EarnSchema.index({ tokenName: 1 });
+EarnSchema.index({ maxRate: -1 });

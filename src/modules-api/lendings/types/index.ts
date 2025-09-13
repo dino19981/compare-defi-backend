@@ -1,2 +1,2 @@
 export * from './Lending';
-export * from './LendingPlatform';
+export * from './LendingPlatformName';

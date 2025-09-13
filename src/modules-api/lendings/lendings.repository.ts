@@ -1,49 +1,33 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
-import { PoolEntity } from './lendings.entity';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { LendingEntity, LendingDocument } from './lendings.entity';
 import { LendingDto } from './dtos/lendings.dto';
 import { LendingRequest } from './dtos/lendingRequest.dto';
-import { getSqlRequestForTokensFilter } from './helpers';
 
 @Injectable()
 export class LendingsRepository {
   constructor(
-    @InjectRepository(PoolEntity)
-    private readonly lendingsRepository: Repository<PoolEntity>,
+    @InjectModel(LendingEntity.name)
+    private readonly lendingsModel: Model<LendingDocument>,
   ) {}
 
   async findAll(query: LendingRequest): Promise<LendingDto[]> {
     console.log('Получен запрос:', JSON.stringify(query, null, 2));
 
-    const queryBuilder = this.lendingsRepository.createQueryBuilder('pool');
+    const filter = this.buildMongoFilter(query.filter);
+    const sort = this.buildMongoSort(query.sort);
 
-    if (query.filter) {
-      this.applyFilters(queryBuilder, query.filter);
-    }
-
-    if (query.sort) {
-      queryBuilder.orderBy(
-        query.sort.field,
-        query.sort.direction.toUpperCase() as unknown as 'ASC' | 'DESC',
-      );
-    }
-
-    // queryBuilder.limit(query.limit);
-
-    const data = await queryBuilder.getMany();
+    const data = await this.lendingsModel.find(filter).sort(sort).exec();
 
     console.log(data.length, 'data');
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return data.map((item) => this.formatToLendingItem(item));
   }
 
   async saveMany(data: LendingDto[]): Promise<LendingDto[]> {
-    // const entities = data.map((item) => this.formatToEarnEntity(item));
-
-    const savedEntities = this.lendingsRepository.create(data);
-    await this.lendingsRepository.save(savedEntities);
-
+    await this.lendingsModel.insertMany(data);
     return data;
   }
 
@@ -75,32 +59,44 @@ export class LendingsRepository {
   //     .getMany() as Promise<EarnItemDto[]>;
   // }
 
-  private applyFilters(
-    queryBuilder: SelectQueryBuilder<PoolEntity>,
-    filters: Record<string, any>,
-  ): void {
-    console.log('Применяем фильтры:', JSON.stringify(filters, null, 2));
+  private buildMongoFilter(filters: Record<string, any> | undefined): any {
+    if (!filters) return {};
 
-    getSqlRequestForTokensFilter(filters, queryBuilder);
+    const mongoFilter: any = {};
 
+    // Фильтр по токенам
+    if (filters.tokens && filters.tokens.length > 0) {
+      mongoFilter.$or = [
+        { 'firstToken.name': { $in: filters.tokens } },
+        { 'secondToken.name': { $in: filters.tokens } },
+      ];
+    }
+
+    // Фильтр по сетям (если есть в данных)
     if (filters.chains && filters.chains.length > 0) {
-      queryBuilder.andWhere("LOWER(pool.chain->>'name') IN (:...chains)", {
-        chains: filters.chains,
-      });
+      mongoFilter['chain.name'] = { $in: filters.chains };
     }
 
+    // Фильтр по платформам (если есть в данных)
     if (filters.platforms && filters.platforms.length > 0) {
-      queryBuilder.andWhere("pool.platform->>'name' IN (:...platforms)", {
-        platforms: filters.platforms,
-      });
+      mongoFilter['platform.name'] = { $in: filters.platforms };
     }
 
-    // console.log(queryBuilder.getQueryAndParameters(), 'all filters');
+    return mongoFilter;
   }
 
-  private formatToLendingItem(item: PoolEntity): LendingDto {
+  private buildMongoSort(
+    sort: { field: string; direction: string } | undefined,
+  ): any {
+    if (!sort) return {};
+
+    const direction = sort.direction.toUpperCase() === 'ASC' ? 1 : -1;
+    return { [sort.field]: direction };
+  }
+
+  private formatToLendingItem(item: LendingDocument): LendingDto {
     return {
-      id: item.id,
+      id: item._id.toString(),
       firstToken: {
         name: item.firstToken.name,
         imageUrl: item.firstToken.imageUrl,
@@ -109,15 +105,6 @@ export class LendingsRepository {
         name: item.secondToken.name,
         imageUrl: item.secondToken.imageUrl,
       },
-      chain: {
-        name: item.chain.name,
-        imageUrl: item.chain.imageUrl,
-      },
-      platform: {
-        name: item.platform.name,
-        link: item.platform.link,
-        refLink: item.platform.refLink,
-      },
       tvl: item.tvl,
       volume: item.volume,
       fee: item.fee,
@@ -125,7 +112,7 @@ export class LendingsRepository {
       ...(item.badges && {
         badges: [...item.badges],
       }),
-    };
+    } as never;
   }
 
   // private formatToEarnEntity(item: EarnItemDto): EarnEntity {

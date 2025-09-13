@@ -1,56 +1,23 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
-import { EarnEntity } from './earn.entity';
-import { EarnPlatform } from './types';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { EarnEntity, EarnDocument } from './earn.entity';
 import { EarnItemDto, EarnRequest } from './dtos/earn.dto';
-import { AvailableTokensForEarn } from './helpers';
 
 @Injectable()
 export class EarnRepository {
   constructor(
-    @InjectRepository(EarnEntity)
-    private readonly earnRepository: Repository<EarnEntity>,
+    @InjectModel(EarnEntity.name)
+    private readonly earnModel: Model<EarnDocument>,
   ) {}
 
   async findAll(query: EarnRequest): Promise<EarnItemDto[]> {
-    const where =
-      query.filter && Object.keys(query.filter).length
-        ? Object.fromEntries(
-            Object.entries(query.filter).map(([key, value]) => {
-              if (Array.isArray(value)) {
-                return [key, In(value)];
-              }
+    const filter = this.buildMongoFilter(query.filter);
+    const sort = this.buildMongoSort(query.sort);
 
-              return [key, value];
-            }),
-          )
-        : undefined;
+    const data = await this.earnModel.find(filter).sort(sort).lean().exec();
 
-    const data = await this.earnRepository.find({
-      ...(where && { where }),
-      ...(query.sort &&
-        Object.keys(query.sort).length && {
-          order: {
-            [query.sort?.field as keyof EarnItemDto]: query.sort.direction,
-          },
-        }),
-    });
-
-    console.log(
-      query,
-      {
-        ...(where && { where }),
-        ...(query.sort &&
-          Object.keys(query.sort).length && {
-            order: {
-              [query.sort?.field as keyof EarnItemDto]: query.sort.direction,
-            },
-          }),
-      },
-      'wqeqweqweqweqweq',
-    );
-
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return data.map((item) => this.formatToEarnItem(item));
   }
 
@@ -69,11 +36,7 @@ export class EarnRepository {
   // }
 
   async saveMany(data: EarnItemDto[]): Promise<EarnItemDto[]> {
-    const entities = data.map((item) => this.formatToEarnEntity(item));
-
-    const savedEntities = this.earnRepository.create(entities);
-    await this.earnRepository.save(savedEntities);
-
+    await this.earnModel.insertMany(data);
     return data;
   }
 
@@ -105,18 +68,55 @@ export class EarnRepository {
   //     .getMany() as Promise<EarnItemDto[]>;
   // }
 
-  private formatToEarnItem(item: EarnEntity): EarnItemDto {
+  private buildMongoFilter(filters: Record<string, any> | undefined): any {
+    if (!filters) return {};
+
+    const mongoFilter: any = {};
+
+    // Фильтр по токенам
+    if (filters.tokens && filters.tokens.length > 0) {
+      mongoFilter.tokenName = { $in: filters.tokens };
+    }
+
+    // Фильтр по платформам
+    if (filters.platforms && filters.platforms.length > 0) {
+      mongoFilter.platformName = { $in: filters.platforms };
+    }
+
+    // Фильтр по типу периода
+    if (filters.periodType) {
+      mongoFilter.periodType = filters.periodType;
+    }
+
+    // Фильтр по уровню продукта
+    if (filters.productLevel) {
+      mongoFilter.productLevel = filters.productLevel;
+    }
+
+    return mongoFilter;
+  }
+
+  private buildMongoSort(
+    sort: { field: string; direction: string } | undefined,
+  ): any {
+    if (!sort) return {};
+
+    const direction = sort.direction.toUpperCase() === 'ASC' ? 1 : -1;
+    return { [sort.field]: direction };
+  }
+
+  private formatToEarnItem(item: EarnDocument): EarnItemDto {
     return {
       id: item.id,
       name: item.name,
       periodType: item.periodType,
       token: {
-        name: item.tokenName as AvailableTokensForEarn,
+        name: item.token.name,
       },
       platform: {
-        name: item.platformName as EarnPlatform,
-        link: item.platformLink,
-        refLink: item.platformRefLink,
+        name: item.platform.name,
+        link: item.platform.link,
+        refLink: item.platform.refLink,
       },
       productLevel: item.productLevel,
 
@@ -131,29 +131,6 @@ export class EarnRepository {
       duration: item.duration,
       ...(item.badges && {
         badges: [...item.badges],
-      }),
-    };
-  }
-
-  private formatToEarnEntity(item: EarnItemDto): EarnEntity {
-    return {
-      id: item.id,
-      name: item.name,
-      periodType: item.periodType,
-      tokenName: item.token.name,
-      platformName: item.platform.name,
-      platformLink: item.platform.link,
-      platformRefLink: item.platform.refLink,
-
-      productLevel: item.productLevel,
-
-      maxRate: item.maxRate,
-      ...(item?.rateSettings && {
-        rateSettings: item.rateSettings,
-      }),
-      duration: item.duration,
-      ...(item.badges && {
-        badges: item.badges,
       }),
     };
   }

@@ -16,4 +16,4 @@
 ### Новые
 
 1. Pendle https://api-v2.pendle.finance/core/v1/1/markets/active (https://api-v2.pendle.finance/core/docs#/Markets/MarketsSimplifiedController_getActiveMarkets)
-2.
+2. https://app.silo.finance/earn (https://app.silo.finance/api/earn POST запрос)
