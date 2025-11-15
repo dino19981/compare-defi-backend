@@ -1,4 +1,9 @@
-import { ApiBody, ApiQuery, ApiResponse, ApiOperation } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiResponse,
+  ApiOperation,
+  ApiExtraModels,
+} from '@nestjs/swagger';
 import { TSwaggerParams } from '../types';
 import { applyDecorators } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
@@ -33,15 +38,7 @@ export const buildSwaggerSchema = (
   );
 
   if (schemaQuery) {
-    decorators.push(
-      ApiQuery({
-        name: 'query',
-        required: false,
-        schema: {
-          $ref: `${REF_PREFIX}${schemaQuery.name}`,
-        },
-      }),
-    );
+    decorators.push(ApiExtraModels(schemaQuery));
   }
 
   if (schemaRequest) {

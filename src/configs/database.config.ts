@@ -1,8 +1,8 @@
 import { MongooseModuleOptions } from '@nestjs/mongoose';
-import { env } from './env.config';
+import { appConfig } from '.';
 
 export const databaseConfig: MongooseModuleOptions = {
-  uri: env.MONGO_URI,
+  uri: appConfig.mongo.uri,
   retryWrites: true,
   w: 'majority',
   retryReads: true,

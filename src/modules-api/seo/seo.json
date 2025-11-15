@@ -1,0 +1,70 @@
+{
+    "pathname": "earn",
+    "data": {
+        "ru": {
+            "head": {
+                "title": "Сравнение стейкинга криптовалют",
+                "description": "Лучшие ставки и условия стейкинга криптовалют – выберите оптимальный вариант."
+            },
+            "title": "Сравнение стейкинга криптовалют",
+            "description": "Лучшие ставки и условия стейкинга криптовалют – выберите оптимальный вариант.",
+            "pageDescription": [
+                {
+                    "text": "Лучшие ставки и условия стейкинга криптовалют – выберите оптимальный вариант."
+                },
+                {
+                    "text": "Лучшие ставки и условия стейкинга криптовалют – выберите оптимальный вариант."
+                }
+            ],
+            "faq": {
+                "title": "Сравнение стейкинга криптовалют",
+                "items": [
+                    {
+                        "question": "Сравнение стейкинга криптовалют",
+                        "answer": "Лучшие ставки и условия стейкинга криптовалют – выберите оптимальный вариант."
+                    }
+                ]
+            },
+            "innerLinks": {
+                "title": "Сравнение стейкинга криптовалют",
+                "links": [
+                    {
+                        "name": "Сравнение стейкинга криптовалют",
+                        "link": "https://www.google.com"
+                    }
+                ]
+            }
+        },
+        "en": {
+            "head": {
+                "title": "Earn comparison",
+                "description": "Best staking rates and conditions – choose the optimal variant."
+            },
+            "title": "Earn comparison",
+            "description": "Best staking rates and conditions – choose the optimal variant.",
+            "pageDescription": [
+                {
+                    "text": "Best staking rates and conditions – choose the optimal variant."
+                }
+            ],
+            "faq": {
+                "title": "Earn comparison",
+                "items": [
+                    {
+                        "question": "Earn comparison",
+                        "answer": "Best staking rates and conditions – choose the optimal variant."
+                    }
+                ]
+            },
+            "innerLinks": {
+                "title": "Earn comparison",
+                "links": [
+                    {
+                        "name": "Earn comparison",
+                        "link": "https://www.google.com"
+                    }
+                ]
+            }
+        }
+    }
+}

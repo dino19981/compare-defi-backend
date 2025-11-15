@@ -6,20 +6,24 @@ import { AppService } from './app.service';
 import { EarnModule } from './modules-api/earn/earn.module';
 import { PoolsModule } from './modules-api/pools/pools.module';
 import { LendingsModule } from '@modules-api/lendings/lendings.module';
-import { databaseConfig } from './config/database.config';
+import { databaseConfig } from './configs/database.config';
 import { TokensJob, EarnDataJob, PoolsDataJob } from './jobs';
 import { TokensModule } from '@shared-modules/tokens';
+import { RedisModule } from '@shared-modules/redis';
+import { SeoModule } from './modules-api/seo/seo.module';
 
 @Module({
   imports: [
     MongooseModule.forRootAsync({
       useFactory: () => databaseConfig,
     }),
-    TokensModule,
     ScheduleModule.forRoot(),
+    RedisModule,
+    TokensModule,
     EarnModule,
     PoolsModule,
     LendingsModule,
+    SeoModule,
   ],
   controllers: [AppController],
   providers: [AppService, EarnDataJob, PoolsDataJob, TokensJob],

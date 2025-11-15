@@ -5,6 +5,14 @@ export type TConfig = {
     description: string;
     version: string;
   };
+  mongo: {
+    uri?: string;
+  };
+  redis: {
+    host?: string;
+    port?: number;
+    password?: string;
+  };
   exchanges: {
     binance: {
       apiKey?: string;

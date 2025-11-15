@@ -33,6 +33,7 @@ import { EarnRepository } from './repositories/earn.repository';
 import { TokensService } from 'src/shared/modules/tokens';
 import { EarnMetaDto } from './dtos/EarnMeta.dto';
 import { EarnMetaRepository } from './repositories/earnMeta.repository';
+import { RedisService } from '@shared-modules/redis';
 
 const DEFAULT_META: EarnMetaDto = {
   platforms: [],
@@ -61,6 +62,7 @@ export class EarnService {
     private readonly jitoService: JitoService,
     private readonly earnRepository: EarnRepository,
     private readonly earnMetaRepository: EarnMetaRepository,
+    private readonly redisService: RedisService,
   ) {}
 
   async fetchEarnItems(): Promise<EarnResponseDto> {
@@ -163,6 +165,24 @@ export class EarnService {
   }
 
   async getEarnItems(query: EarnRequest): Promise<EarnResponseDto> {
+    // const isHasCustomQuery = !isEqual(query, {
+    //   sort: { field: 'maxRate', direction: 'desc' },
+    //   limit: '40',
+    //   skip: '0',
+    // });
+
+    // const channel = 'seo';
+    // const byPosition = 'seoPosition';
+    // const redisKey = `earn:${channel}${byPosition}`;
+
+    // if (!isHasCustomQuery) {
+    //   const cachedData = await this.redisService.get(redisKey);
+
+    //   if (cachedData) {
+    //     return JSON.parse(cachedData) as EarnResponseDto;
+    //   }
+    // }
+
     try {
       const [earnItems, meta] = await Promise.all([
         this.earnRepository.findBy(query),
@@ -187,6 +207,19 @@ export class EarnService {
           },
         };
       }
+
+      // if (!isHasCustomQuery) {
+      //   await this.redisService.set(
+      //     redisKey,
+      //     JSON.stringify({
+      //       data: earnItems.data,
+      //       meta,
+      //       pagination: {
+      //         total: earnItems.total,
+      //       },
+      //     }),
+      //   );
+      // }
 
       return {
         data: earnItems.data,

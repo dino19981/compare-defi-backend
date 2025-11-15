@@ -13,6 +13,16 @@ export const config = (): TConfig => {
       version: '1.0',
     },
 
+    mongo: {
+      uri: process.env.MONGO_URI,
+    },
+
+    redis: {
+      host: process.env.REDIS_HOST,
+      port: Number(process.env.REDIS_PORT),
+      password: process.env.REDIS_PASSWORD,
+    },
+
     exchanges: {
       binance: {
         apiKey: process.env.BINANCE_API_KEY,
@@ -48,3 +58,5 @@ export const config = (): TConfig => {
     },
   };
 };
+
+export const appConfig = config();
