@@ -6,15 +6,15 @@ export interface BinanceEarnsDto {
 
 export interface BinanceEarnDto {
   asset: string;
-  productSummary: BinanceProductSummary[];
+  productDetailList: BinanceProductSummary[];
 }
 
 interface BinanceProductSummary {
   productType: BinanceProductSummaryType;
   // number
-  maxApr: string;
-  // number
-  minApr: string;
+  apy: string;
+  // // number
+  // minApr: string;
   productId: string;
   duration: string[];
 }

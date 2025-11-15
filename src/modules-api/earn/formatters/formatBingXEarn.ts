@@ -4,19 +4,21 @@ import {
   EarnItemRateSettings,
   infinityValue,
 } from '../types/EarnItem';
-import { isAvailableTokenForEarnings } from '../helpers';
 import { BingXEarnDto, BingxEarnProduct } from '@modules/bingX/types';
 import { EarnPlatform } from '../types';
 import { v4 as uuidv4 } from 'uuid';
+import { findTokenDataByName, TokenModel } from '@shared-modules/tokens';
+import { addAnalyticsToLink } from '@shared-modules/analytics';
 
-export function formatBingXEarn(items: BingXEarnDto[]): EarnItem[] {
+export function formatBingXEarn(
+  items: BingXEarnDto[],
+  tokens: Record<string, TokenModel>,
+): EarnItem[] {
   return items.reduce((acc: EarnItem[], item) => {
-    if (!isAvailableTokenForEarnings(item.assetName)) {
-      return acc;
-    }
+    const token = findTokenDataByName(item.assetName, tokens);
 
     item.products.forEach((product) => {
-      if (product.productName === 'SharkFin11') {
+      if (product.productName.toLocaleLowerCase().includes('shark')) {
         return;
       }
 
@@ -25,13 +27,14 @@ export function formatBingXEarn(items: BingXEarnDto[]): EarnItem[] {
         name: product.productName,
         token: {
           name: item.assetName,
+          icon: token?.image || item.icon,
         },
         periodType: 'flexible',
         duration: product.duration === -1 ? infinityValue : product.duration,
         ...(product.tieredApyRule &&
           formatTieredApyRule(product.tieredApyRule)),
         platform: {
-          link: 'https://bingx.com/ru-ru/wealth/earn',
+          link: addAnalyticsToLink('https://bingx.com/wealth/earn'),
           name: EarnPlatform.BingX,
         },
         maxRate: +product.apy,

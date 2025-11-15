@@ -32,12 +32,12 @@ async function createIndexes() {
 
     // Создаем индексы для EarnEntity
     await earnModel.collection.createIndex({
-      platformName: 1,
+      'platform.name': 1,
       maxRate: -1,
-      tokenName: 1,
+      'token.name': 1,
     });
-    await earnModel.collection.createIndex({ tokenName: 1 });
-    await earnModel.collection.createIndex({ platformName: 1 });
+    await earnModel.collection.createIndex({ 'token.name': 1 });
+    await earnModel.collection.createIndex({ 'platform.name': 1 });
     await earnModel.collection.createIndex({ maxRate: -1 });
     await earnModel.collection.createIndex({ periodType: 1 });
     console.log('✅ Индексы для EarnEntity созданы');

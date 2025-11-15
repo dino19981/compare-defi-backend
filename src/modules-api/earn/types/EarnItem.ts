@@ -36,6 +36,7 @@ export interface EarnItemRate {
 
 export interface EarnItemToken {
   name: string;
+  icon: string | undefined;
 }
 
 export interface EarnItemRate {

@@ -9,12 +9,14 @@ import { PoolsRepository } from './pools.repository';
 import { PoolEntity, PoolSchema } from './pools.entity';
 import { CetusModule } from '@modules/cetus';
 import { RaydiumModule } from '@modules/raydium';
+import { TokensModule } from '@shared-modules/tokens';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: PoolEntity.name, schema: PoolSchema }]),
-    PancakeSwapModule,
     ChainsModule,
+    TokensModule,
+    PancakeSwapModule,
     UniSwapModule,
     CetusModule,
     RaydiumModule,

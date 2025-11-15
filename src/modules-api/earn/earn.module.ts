@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { EarnController } from './earn.controller';
 import { EarnService } from './earn.service';
-import { EarnEntity, EarnSchema } from './earn.entity';
-import { EarnRepository } from './earn.repository';
+import { EarnEntity, EarnSchema } from './entities/earn.entity';
+import { EarnRepository } from './repositories/earn.repository';
 import { BinanceModule } from '@modules/binance';
 import { BybitModule } from '@modules/bybit';
 import { OkxModule } from '@modules/okx';
@@ -17,10 +17,17 @@ import { LidoModule } from '@modules/lido';
 import { VenusModule } from '@modules/venus';
 import { NaviModule } from '@modules/navi';
 import { JitoModule } from '@modules/jito';
+import { TokensModule } from '@shared-modules/tokens';
+import { EarnMetaEntity, EarnMetaSchema } from './entities';
+import { EarnMetaRepository } from './repositories';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: EarnEntity.name, schema: EarnSchema }]),
+    MongooseModule.forFeature([
+      { name: EarnMetaEntity.name, schema: EarnMetaSchema },
+    ]),
+    TokensModule,
     BinanceModule,
     BybitModule,
     OkxModule,
@@ -36,7 +43,7 @@ import { JitoModule } from '@modules/jito';
     JitoModule,
   ],
   controllers: [EarnController],
-  providers: [EarnService, EarnRepository],
+  providers: [EarnService, EarnRepository, EarnMetaRepository],
   exports: [EarnService],
 })
 export class EarnModule {}

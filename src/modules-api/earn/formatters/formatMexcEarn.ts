@@ -4,13 +4,12 @@ import {
   EarnItemLevel,
   infinityValue,
 } from '../types/EarnItem';
-import {
-  AvailableTokensForEarn,
-  isAvailableTokenForEarnings,
-} from '../helpers';
+import { AvailableTokensForEarn } from '../helpers';
 import { MexcEarnItem, MexcEarnProduct } from '@modules/mexc/types';
 import { EarnPlatform } from '../types';
 import { v4 as uuidv4 } from 'uuid';
+import { findTokenDataByName, TokenModel } from '@shared-modules/tokens';
+import { addAnalyticsToLink } from '@shared-modules/analytics';
 
 const forNewUsersLimits: Record<AvailableTokensForEarn, number> = {
   USDT: 100,
@@ -33,11 +32,12 @@ const forNewUsersLimits: Record<AvailableTokensForEarn, number> = {
 };
 
 // проверить маппинг
-export function formatMexcEarn(items: MexcEarnItem[]): EarnItem[] {
+export function formatMexcEarn(
+  items: MexcEarnItem[],
+  tokens: Record<string, TokenModel>,
+): EarnItem[] {
   return items.reduce((acc: EarnItem[], item) => {
-    if (!isAvailableTokenForEarnings(item.currency)) {
-      return acc;
-    }
+    const token = findTokenDataByName(item.currency, tokens);
 
     [...(item.lockPosList || []), ...(item.holdPosList || [])].forEach(
       (product) => {
@@ -50,13 +50,16 @@ export function formatMexcEarn(items: MexcEarnItem[]): EarnItem[] {
           id: uuidv4(),
           token: {
             name: item.currency,
+            icon: token?.image,
           },
           duration: isForNewUsers
             ? (product.minLockDays ?? infinityValue)
             : infinityValue,
           periodType: 'flexible',
           platform: {
-            link: 'https://www.mexc.com/staking?inviteCode=3KJXS',
+            link: addAnalyticsToLink(
+              'https://www.mexc.com/staking?inviteCode=3KJXS',
+            ),
             name: EarnPlatform.Mexc,
           },
           maxRate: apy,

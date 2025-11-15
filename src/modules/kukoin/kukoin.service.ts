@@ -28,7 +28,7 @@ export class KukoinService {
 
   async getEarnItems() {
     try {
-      const url = `/_pxapi/pool-staking/v4/low-risk/currencies-products?lang=ru_RU`;
+      const url = `/_pxapi/pool-staking/v4/low-risk/currencies-products`;
 
       const response = await firstValueFrom(
         this.httpService.get<KucoinEarnsDto>(url),

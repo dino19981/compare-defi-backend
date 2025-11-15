@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectModel, InjectConnection } from '@nestjs/mongoose';
+import { Connection } from 'mongoose';
 import { Model } from 'mongoose';
 import { PoolEntity, PoolDocument } from './pools.entity';
 import { PoolItemDto } from './dtos/pool.dto';
@@ -10,20 +11,48 @@ export class PoolsRepository {
   constructor(
     @InjectModel(PoolEntity.name)
     private readonly poolsModel: Model<PoolDocument>,
+    @InjectConnection()
+    private readonly connection: Connection,
   ) {}
 
-  async findAll(query: PoolRequest): Promise<PoolItemDto[]> {
+  async findBy(
+    query: PoolRequest,
+  ): Promise<{ data: PoolItemDto[]; total: number }> {
     console.log('Получен запрос:', JSON.stringify(query, null, 2));
 
     const filter = this.buildMongoFilter(query.filter);
     const sort = this.buildMongoSort(query.sort);
 
-    const data = await this.poolsModel.find(filter).sort(sort).exec();
+    const [data, total] = await Promise.all([
+      this.poolsModel.find(filter).sort(sort).limit(query.limit).exec(),
+      this.poolsModel.countDocuments(filter),
+    ]);
 
-    console.log(data.length, 'data');
+    return {
+      data: data.map((item) => this.formatToPoolItem(item)),
+      total,
+    };
+  }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return data.map((item) => this.formatToPoolItem(item));
+  async findAll(): Promise<PoolItemDto[]> {
+    const data = await this.poolsModel.find().exec();
+
+    return data;
+  }
+
+  async replaceMany(data: PoolItemDto[]): Promise<PoolItemDto[]> {
+    const session = await this.connection.startSession();
+
+    try {
+      await session.withTransaction(async () => {
+        await this.poolsModel.deleteMany({}, { session });
+        await this.poolsModel.insertMany(data, { session });
+      });
+
+      return data;
+    } finally {
+      await session.endSession();
+    }
   }
 
   async saveMany(data: PoolItemDto[]): Promise<PoolItemDto[]> {
@@ -31,55 +60,111 @@ export class PoolsRepository {
     return data;
   }
 
-  // async findByTokenName(tokenName: string): Promise<EarnItemDto[]> {
-  //   return this.earnRepository
-  //     .createQueryBuilder('earn')
-  //     .where("earn.token->>'name' = :tokenName", { tokenName })
-  //     .orderBy('earn.createdAt', 'DESC')
-  //     .getMany() as Promise<EarnItemDto[]>;
-  // }
-
-  // async findByPlatformName(platformName: string): Promise<EarnItemDto[]> {
-  //   return this.earnRepository
-  //     .createQueryBuilder('earn')
-  //     .where("earn.platform->>'name' = :platformName", { platformName })
-  //     .orderBy('earn.createdAt', 'DESC')
-  //     .getMany() as Promise<EarnItemDto[]>;
-  // }
-
-  // async findByTokenAndPlatform(
-  //   tokenName: string,
-  //   platformName: string,
-  // ): Promise<EarnItemDto[]> {
-  //   return this.earnRepository
-  //     .createQueryBuilder('earn')
-  //     .where("earn.token->>'name' = :tokenName", { tokenName })
-  //     .andWhere("earn.platform->>'name' = :platformName", { platformName })
-  //     .orderBy('earn.createdAt', 'DESC')
-  //     .getMany() as Promise<EarnItemDto[]>;
-  // }
-
   private buildMongoFilter(filters: Record<string, any> | undefined): any {
     if (!filters) return {};
 
+    const { firstTokens: _firstTokens = [], secondTokens: _secondTokens = [] } =
+      filters;
+
     const mongoFilter: any = {};
 
+    const hasFirstTokens = _firstTokens && _firstTokens.length > 0;
+    const hasSecondTokens = _secondTokens && _secondTokens.length > 0;
+
+    const firstTokens = _firstTokens.map((token: string) =>
+      token.toUpperCase(),
+    );
+    const secondTokens = _secondTokens.map((token: string) =>
+      token.toUpperCase(),
+    );
+
     // Фильтр по токенам
-    if (filters.tokens && filters.tokens.length > 0) {
+    if (hasFirstTokens && !hasSecondTokens) {
+      console.log('add first token');
+
+      // Создаем регулярные выражения для поиска по частичному вхождению
+      const firstTokenRegexes = firstTokens.map((token) => ({
+        'firstToken.name': {
+          $regex: new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'),
+        },
+      }));
+
+      const secondTokenRegexes = firstTokens.map((token) => ({
+        'secondToken.name': {
+          $regex: new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'),
+        },
+      }));
+
+      mongoFilter.$or = [...firstTokenRegexes, ...secondTokenRegexes];
+    }
+
+    if (hasFirstTokens && hasSecondTokens) {
+      const firstTokenRegexes = firstTokens.map((token) => ({
+        'firstToken.name': {
+          $regex: new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'),
+        },
+      }));
+
+      const secondTokenRegexes = secondTokens.map((token) => ({
+        'secondToken.name': {
+          $regex: new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'),
+        },
+      }));
+
+      const firstTokenRegexes2 = firstTokens.map((token) => ({
+        'secondToken.name': {
+          $regex: new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'),
+        },
+      }));
+
+      const secondTokenRegexes2 = secondTokens.map((token) => ({
+        'firstToken.name': {
+          $regex: new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'),
+        },
+      }));
+
       mongoFilter.$or = [
-        { 'firstToken.name': { $in: filters.tokens } },
-        { 'secondToken.name': { $in: filters.tokens } },
+        {
+          $and: [
+            {
+              $or: firstTokenRegexes,
+            },
+            {
+              $or: secondTokenRegexes,
+            },
+          ],
+        },
+        {
+          $and: [
+            {
+              $or: secondTokenRegexes2,
+            },
+            {
+              $or: firstTokenRegexes2,
+            },
+          ],
+        },
       ];
     }
 
     // Фильтр по сетям
     if (filters.chains && filters.chains.length > 0) {
-      mongoFilter['chain.name'] = { $in: filters.chains };
+      mongoFilter['chain.name'] = {
+        $in: filters.chains.map(
+          (chain: string) =>
+            new RegExp(chain.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'),
+        ),
+      };
     }
 
     // Фильтр по платформам
     if (filters.platforms && filters.platforms.length > 0) {
-      mongoFilter['platform.name'] = { $in: filters.platforms };
+      mongoFilter['platform.name'] = {
+        $in: filters.platforms.map(
+          (platform: string) =>
+            new RegExp(platform.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'),
+        ),
+      };
     }
 
     return mongoFilter;

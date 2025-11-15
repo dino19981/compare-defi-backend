@@ -29,4 +29,9 @@ export class PoolsController {
   getPoolsItemsWithoutJob(): Promise<PoolsResponseDto> {
     return this.poolsService.getPoolsItemsJob();
   }
+
+  @Get('save-tokens')
+  saveTokens() {
+    return this.poolsService.testTokens();
+  }
 }

@@ -2,7 +2,7 @@ import { MongooseModuleOptions } from '@nestjs/mongoose';
 import { env } from './env.config';
 
 export const databaseConfig: MongooseModuleOptions = {
-  uri: `mongodb://${env.DB_USER}:${env.DB_PASSWORD}@${env.DB_HOST}:${env.DB_PORT}/${env.DB_NAME}`,
+  uri: env.MONGO_URI,
   retryWrites: true,
   w: 'majority',
   retryReads: true,

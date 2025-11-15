@@ -9,6 +9,8 @@ export interface BybitEarnDto {
   coin: number;
   apy_min_e8: string;
   apy_max_e8: string;
+  tokenName?: string;
+  tokenImage?: string;
   product_types: BybitProductType[];
 }
 

@@ -1,8 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
-import { EarnItemLevel, EarnItemBadge } from './types/EarnItem';
-import { EarnItemTokenDto } from './dtos/EarnItemToken.dto';
-import { EarnItemPlatformDto } from './dtos/EarnItemPlatform.dto';
+import { Types, Schema as MongooseSchema } from 'mongoose';
+import { EarnItemLevel, EarnItemBadge } from '../types/EarnItem';
+import { EarnItemTokenDto } from '../dtos/EarnItemToken.dto';
+import { EarnItemPlatformDto } from '../dtos/EarnItemPlatform.dto';
 
 @Schema({ collection: 'earn_data' })
 export class EarnEntity {
@@ -12,7 +12,7 @@ export class EarnEntity {
   @Prop({ type: String, maxlength: 100 })
   name?: string;
 
-  @Prop({ type: String, required: true })
+  @Prop({ type: Object, required: true })
   token: EarnItemTokenDto;
 
   @Prop({
@@ -22,7 +22,7 @@ export class EarnEntity {
   })
   periodType: 'flexible' | 'fixed';
 
-  @Prop({ type: String, required: true })
+  @Prop({ type: Object, required: true })
   platform: EarnItemPlatformDto;
 
   @Prop({
@@ -44,12 +44,12 @@ export class EarnEntity {
   }>;
 
   @Prop({
-    type: Number || 'Infinity',
+    type: MongooseSchema.Types.Mixed,
     required: true,
   })
   duration: number | 'Infinity';
 
-  @Prop({ type: [EarnItemBadge], default: [] })
+  @Prop({ type: [String], default: [] })
   badges?: EarnItemBadge[];
 }
 

@@ -1,8 +1,4 @@
 import { EarnItem, EarnItemLevel, infinityValue } from '../types/EarnItem';
-import {
-  AvailableTokensForEarn,
-  isAvailableTokenForEarnings,
-} from '../helpers';
 import { BybitEarnDto, BybitProductType } from '@modules/bybit/types';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -10,23 +6,15 @@ import {
   getEarnItemNameByProductType,
 } from '@modules/bybit/helpers';
 import { EarnPlatform } from '../types';
+import { findTokenDataByName, TokenModel } from '@shared-modules/tokens';
+import { addAnalyticsToLink } from '@shared-modules/analytics';
 
-const coinNameByCoinNumber: Record<number, AvailableTokensForEarn> = {
-  1: 'BTC',
-  2: 'ETH',
-  5: 'USDT',
-  6: 'USDC',
-  8: 'SOL',
-  624: 'USDE',
-};
-
-export function formatBybitEarn(items: BybitEarnDto[]): EarnItem[] {
+export function formatBybitEarn(
+  items: BybitEarnDto[],
+  tokens: Record<string, TokenModel>,
+): EarnItem[] {
   return items.reduce((acc: EarnItem[], item) => {
-    const coinName = coinNameByCoinNumber[item.coin];
-
-    if (!coinName || !isAvailableTokenForEarnings(coinName)) {
-      return acc;
-    }
+    const token = findTokenDataByName(item.tokenName!, tokens);
 
     item.product_types.forEach((productType) => {
       if (
@@ -39,11 +27,14 @@ export function formatBybitEarn(items: BybitEarnDto[]): EarnItem[] {
         id: uuidv4(),
         name: getEarnItemNameByProductType(productType.product_type),
         token: {
-          name: coinName,
+          name: item.tokenName!,
+          icon: token?.image || item.tokenImage,
         },
         periodType: 'flexible',
         platform: {
-          link: 'https://www.bybit.com/en/earn/home?ref=5PDEAN',
+          link: addAnalyticsToLink(
+            'https://www.bybit.com/en/earn/home?ref=5PDEAN',
+          ),
           name: EarnPlatform.Bybit,
         },
         maxRate: +productType.apy_max_e8 / 1_000_000,

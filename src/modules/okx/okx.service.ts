@@ -39,6 +39,8 @@ export class OkxService {
         }),
       );
 
+      console.log(response.data.data.currencies.length, 'wqeqweqweqwewqeqw');
+
       return response.data.data.currencies;
     } catch (error: unknown) {
       this.logger.error(getEarnError(error, 'okx'));

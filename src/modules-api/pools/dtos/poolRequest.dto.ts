@@ -1,7 +1,3 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { SortAndFilters } from 'src/shared/dtos/sortAndFilters.dto';
+import { BaseRequestQueries } from 'src/shared/dtos/baseRequestQueries.dto';
 
-export class PoolRequest extends SortAndFilters {
-  @ApiProperty({ description: 'Кол-во элементов на странице' })
-  limit?: number;
-}
+export class PoolRequest extends BaseRequestQueries {}

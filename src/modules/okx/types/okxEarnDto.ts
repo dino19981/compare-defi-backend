@@ -7,6 +7,7 @@ export interface OkxEarnsDto {
 export interface OkxEarnDto {
   investCurrency: {
     currencyName: string;
+    currencyIcon: string;
   };
   rate: {
     rateNum: {

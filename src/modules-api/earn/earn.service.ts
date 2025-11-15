@@ -29,12 +29,23 @@ import { LidoService } from '@modules/lido';
 import { VenusService } from '@modules/venus';
 import { NaviService } from '@modules/navi';
 import { JitoService } from '@modules/jito';
-import { EarnRepository } from './earn.repository';
+import { EarnRepository } from './repositories/earn.repository';
+import { TokensService } from 'src/shared/modules/tokens';
+import { EarnMetaDto } from './dtos/EarnMeta.dto';
+import { EarnMetaRepository } from './repositories/earnMeta.repository';
+
+const DEFAULT_META: EarnMetaDto = {
+  platforms: [],
+  totalItems: 0,
+  tokens: [],
+};
 
 @Injectable()
 export class EarnService {
   private readonly logger = new Logger(EarnService.name);
+
   constructor(
+    private readonly tokensService: TokensService,
     private readonly binanceService: BinanceService,
     private readonly bybitService: BybitService,
     private readonly okxService: OkxService,
@@ -49,11 +60,13 @@ export class EarnService {
     private readonly naviService: NaviService,
     private readonly jitoService: JitoService,
     private readonly earnRepository: EarnRepository,
+    private readonly earnMetaRepository: EarnMetaRepository,
   ) {}
 
-  async getEarnItemsJob(): Promise<EarnResponseDto> {
+  async fetchEarnItems(): Promise<EarnResponseDto> {
     try {
       const [
+        tokensData,
         binanceData,
         okxData,
         kukoinData,
@@ -68,6 +81,7 @@ export class EarnService {
         naviData,
         jitoData,
       ] = await Promise.allSettled([
+        this.tokensService.getAllTokens(),
         this.binanceService.getEarnItems(),
         this.okxService.getEarnItems(),
         this.kukoinService.getEarnItems(),
@@ -83,85 +97,150 @@ export class EarnService {
         this.jitoService.getApr(),
       ]);
 
+      const tokens = tokensData.status === 'fulfilled' ? tokensData.value : {};
+
       const earnItems = [
         ...(binanceData.status === 'fulfilled'
-          ? formatBinanceEarn(binanceData.value)
+          ? formatBinanceEarn(binanceData.value, tokens)
           : []),
-        ...(okxData.status === 'fulfilled' ? formatOkxEarn(okxData.value) : []),
+        ...(okxData.status === 'fulfilled'
+          ? formatOkxEarn(okxData.value, tokens)
+          : []),
         ...(kukoinData.status === 'fulfilled'
-          ? formatKukoinEarn(kukoinData.value)
+          ? formatKukoinEarn(kukoinData.value, tokens)
           : []),
-        ...(htxData.status === 'fulfilled' ? formatHtxEarn(htxData.value) : []),
+        ...(htxData.status === 'fulfilled'
+          ? formatHtxEarn(htxData.value, tokens)
+          : []),
         ...(bitgetData.status === 'fulfilled'
-          ? formatBitgetEarn(bitgetData.value)
+          ? formatBitgetEarn(bitgetData.value, tokens)
           : []),
         ...(bybitData.status === 'fulfilled'
-          ? formatBybitEarn(bybitData.value)
+          ? formatBybitEarn(bybitData.value, tokens)
           : []),
         // ...(bingXData.status === 'fulfilled'
         //   ? formatBingXEarn(bingXData.value)
         //   : []),
         ...(mexcData.status === 'fulfilled'
-          ? formatMexcEarn(mexcData.value)
+          ? formatMexcEarn(mexcData.value, tokens)
           : []),
         ...(sparkData.status === 'fulfilled'
-          ? formatSparkEarn(sparkData.value)
+          ? formatSparkEarn(sparkData.value, tokens)
           : []),
-        /* eslint-disable @typescript-eslint/no-unsafe-assignment */
         ...(lidoData.status === 'fulfilled'
-          ? /* eslint-disable @typescript-eslint/no-unsafe-call */
-            formatLidoEarn(lidoData.value as LidoEarnDto[])
+          ? formatLidoEarn(lidoData.value as LidoEarnDto[], tokens)
           : []),
         ...(venusData.status === 'fulfilled'
-          ? formatVenusEarn(venusData.value)
+          ? formatVenusEarn(venusData.value, tokens)
           : []),
         ...(naviData.status === 'fulfilled'
-          ? formatNaviEarn(naviData.value)
+          ? formatNaviEarn(naviData.value, tokens)
           : []),
         ...(jitoData.status === 'fulfilled'
-          ? formatJitoEarn(jitoData.value)
+          ? formatJitoEarn(jitoData.value, tokens)
           : []),
-      ];
+      ] as EarnItemDto[];
+
+      const meta = await this.collectMeta(earnItems);
 
       return {
-        data: earnItems as never as EarnItemDto[],
+        data: earnItems,
+        meta,
+        pagination: {
+          total: earnItems.length,
+        },
       };
     } catch (error) {
       console.error('Error fetching earn items:', error);
       return {
         data: [],
+        meta: DEFAULT_META,
+        pagination: {
+          total: 0,
+        },
       };
     }
   }
 
   async getEarnItems(query: EarnRequest): Promise<EarnResponseDto> {
     try {
-      const earnItems = await this.earnRepository.findAll(query);
+      const [earnItems, meta] = await Promise.all([
+        this.earnRepository.findBy(query),
+        this.earnMetaRepository.find(),
+      ]);
 
-      if (!earnItems.length && !Object.keys(query?.filter || {}).length) {
-        const earnData = await this.saveEarnItemsInDb();
+      if (
+        !earnItems?.data?.length &&
+        !Object.keys(query?.filter || {}).length
+      ) {
+        await this.saveEarnItemsInDb();
+        const [data, meta] = await Promise.all([
+          this.earnRepository.findBy(query),
+          this.earnMetaRepository.find(),
+        ]);
 
         return {
-          data: earnData.data,
+          data: data.data,
+          meta,
+          pagination: {
+            total: data.total,
+          },
         };
       }
 
       return {
-        data: earnItems,
+        data: earnItems.data,
+        meta,
+        pagination: {
+          total: earnItems.total,
+        },
       };
     } catch (e: any) {
       this.logger.error(`Не удалось получить Earn, ${e?.message}`);
 
       return {
         data: [],
+        meta: DEFAULT_META,
+        pagination: {
+          total: 0,
+        },
       };
     }
   }
 
   async saveEarnItemsInDb() {
-    const earnData = await this.getEarnItemsJob();
+    const earnData = await this.fetchEarnItems();
     await this.earnRepository.saveMany(earnData.data);
 
+    const meta = await this.collectMeta(earnData.data);
+    await this.earnMetaRepository.replace(meta);
+
     return earnData;
+  }
+
+  private async collectMeta(data?: EarnItemDto[]): Promise<EarnMetaDto> {
+    if (!data) {
+      data = await this.earnRepository.findAll();
+    }
+
+    const meta = data.reduce(
+      (acc, item) => {
+        acc.platforms.add(item.platform.name);
+        acc.tokens[item.token.name] = item.token;
+        acc.totalItems++;
+        return acc;
+      },
+      {
+        platforms: new Set(),
+        totalItems: 0,
+        tokens: {},
+      },
+    );
+
+    return {
+      ...meta,
+      platforms: Array.from(meta.platforms) as string[],
+      tokens: Object.values(meta.tokens),
+    };
   }
 }

@@ -3,17 +3,17 @@ import {
   BinanceProductSummaryType,
 } from '@modules/binance/types/binanceEarnDto';
 import { EarnItem, EarnItemLevel, infinityValue } from '../types/EarnItem';
-import { isAvailableTokenForEarnings } from '../helpers';
 import { EarnPlatform } from '../types';
 import { v4 as uuidv4 } from 'uuid';
+import { findTokenDataByName, TokenModel } from '@shared-modules/tokens';
+import { addAnalyticsToLink } from '@shared-modules/analytics';
 
-export function formatBinanceEarn(items: BinanceEarnDto[]): EarnItem[] {
+export function formatBinanceEarn(
+  items: BinanceEarnDto[],
+  tokens: Record<string, TokenModel>,
+): EarnItem[] {
   return items.reduce((acc: EarnItem[], item) => {
-    if (!isAvailableTokenForEarnings(item.asset)) {
-      return acc;
-    }
-
-    const simpleEarnData = item.productSummary?.filter(
+    const simpleEarnData = item.productDetailList?.filter(
       (product) =>
         product.productType !== BinanceProductSummaryType.DualCurrency,
     );
@@ -22,20 +22,25 @@ export function formatBinanceEarn(items: BinanceEarnDto[]): EarnItem[] {
       return acc;
     }
 
+    const tokenImage = findTokenDataByName(item.asset, tokens)?.image;
+
     simpleEarnData.forEach((product) => {
       acc.push({
         id: uuidv4(),
         name: 'Simple Earn',
         token: {
           name: item.asset,
+          icon: tokenImage,
         },
         duration: infinityValue,
         periodType: 'flexible',
         platform: {
-          link: 'https://www.binance.com/en/earn?ref=CPA_00CR5Q0KBD',
+          link: addAnalyticsToLink(
+            'https://www.binance.com/en/earn?ref=CPA_00CR5Q0KBD',
+          ),
           name: EarnPlatform.Binance,
         },
-        maxRate: +product.maxApr * 100,
+        maxRate: +product.apy * 100,
         productLevel: EarnItemLevel.Beginner,
       });
     });

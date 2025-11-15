@@ -13,7 +13,9 @@ import { EarnItemTokenDto } from './EarnItemToken.dto';
 import { EarnItemPlatformDto } from './EarnItemPlatform.dto';
 import { EarnItemRateSettingsDto } from './EarnItemRateSettings.dto';
 import { EarnItemBadge } from '../types/EarnItem';
-import { SortAndFilters } from 'src/shared/dtos/sortAndFilters.dto';
+import { BaseRequestQueries } from 'src/shared/dtos/baseRequestQueries.dto';
+import { PaginationDto } from 'src/shared/dtos/pagination.dto';
+import { EarnMetaDto } from './EarnMeta.dto';
 
 export class EarnItemDto {
   @ApiProperty({ description: 'Уникальный идентификатор', example: 'earn_001' })
@@ -104,6 +106,29 @@ export class EarnResponseDto {
   @ValidateNested({ each: true })
   @Type(() => EarnItemDto)
   data: EarnItemDto[];
+
+  @ApiProperty({
+    description: 'Мета',
+    type: EarnMetaDto,
+    example: {
+      platforms: ['binance', 'bybit', 'okx'],
+      totalItems: 100,
+    },
+  })
+  @ValidateNested()
+  @Type(() => EarnMetaDto)
+  meta: EarnMetaDto;
+
+  @ApiProperty({
+    description: 'Пагинация',
+    type: PaginationDto,
+    example: {
+      totalItems: 100,
+    },
+  })
+  @ValidateNested()
+  @Type(() => PaginationDto)
+  pagination: PaginationDto;
 }
 
-export class EarnRequest extends SortAndFilters {}
+export class EarnRequest extends BaseRequestQueries {}

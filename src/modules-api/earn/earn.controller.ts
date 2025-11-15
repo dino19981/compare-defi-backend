@@ -25,6 +25,6 @@ export class EarnController {
     description: 'Получить список earn элементов',
   })
   getEarnItemsWithoutJob(): Promise<EarnResponseDto> {
-    return this.earnService.getEarnItemsJob();
+    return this.earnService.fetchEarnItems();
   }
 }

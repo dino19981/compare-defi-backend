@@ -1,13 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum } from 'class-validator';
-import { AvailableTokensForEarn, AVAILABLE_TOKENS_FOR_EARN } from '../helpers';
+import { IsString, IsUrl } from 'class-validator';
 
 export class EarnItemTokenDto {
   @ApiProperty({
     description: 'Название токена',
     example: 'BTC',
-    enum: AVAILABLE_TOKENS_FOR_EARN,
   })
-  @IsEnum(AVAILABLE_TOKENS_FOR_EARN)
-  name: AvailableTokensForEarn;
+  @IsString()
+  name: string;
+
+  @ApiProperty({
+    description: 'Урл картинки токена',
+    example: 'https://example.com/token.png',
+  })
+  @ApiProperty({
+    description: 'Ссылка на платформу',
+    example: 'https://binance.com',
+  })
+  @IsUrl()
+  icon: string;
 }

@@ -1,24 +1,29 @@
 import { BitgetEarnDto } from '@modules/bitget/types';
 import { EarnItem, EarnItemLevel, infinityValue } from '../types';
-import { isAvailableTokenForEarnings } from '../helpers';
 import { EarnPlatform } from '../types';
 import { v4 as uuidv4 } from 'uuid';
+import { findTokenDataByName, TokenModel } from '@shared-modules/tokens';
+import { addAnalyticsToLink } from '@shared-modules/analytics';
 
-export const formatBitgetEarn = (items: BitgetEarnDto[]) => {
+export const formatBitgetEarn = (
+  items: BitgetEarnDto[],
+  tokens: Record<string, TokenModel>,
+) => {
   return items.reduce((acc: EarnItem[], item) => {
-    if (!isAvailableTokenForEarnings(item.coin)) {
-      return acc;
-    }
+    const token = findTokenDataByName(item.coin, tokens);
 
     acc.push({
       id: uuidv4(),
       name: item.coin,
       token: {
         name: item.coin,
+        icon: token?.image,
       },
       periodType: item.periodType,
       platform: {
-        link: 'https://www.bitget.com/ru/earning',
+        link: addAnalyticsToLink(
+          'https://www.bitget.com/earning?clacCode=2RCF8FYU&from=%2Fevents%2Freferral-all-program&source=events',
+        ),
         name: EarnPlatform.Bitget,
       },
       maxRate: getMaxRate(item),

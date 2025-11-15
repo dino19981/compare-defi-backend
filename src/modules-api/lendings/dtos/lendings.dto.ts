@@ -11,6 +11,7 @@ import { LendingPlatformNameDto } from './lendingPlatformDto.dto';
 import { LendingPlatformName } from '../types';
 import { PoolItemTokenDto } from './lendingToken.dto';
 import { ChainDto } from 'src/shared/dtos/chain.dto';
+import { MetaDto } from 'src/shared/dtos/meta.dto';
 
 export class LendingDto {
   @ApiProperty({ description: 'Уникальный идентификатор', example: 'pool_001' })
@@ -61,16 +62,6 @@ export class LendingDto {
   @IsArray()
   @IsOptional()
   badges?: string[];
-}
-
-export class MetaDto {
-  @ApiProperty({
-    description: 'Платформы',
-    type: [String],
-    enum: LendingPlatformName,
-    example: [],
-  })
-  platforms: LendingPlatformName[];
 }
 
 export class LendingResponseDto {

@@ -44,8 +44,6 @@ export class RaydiumService {
         ),
       );
 
-      console.log(response, 'wqeqweqweqw');
-
       return response.data.data.data;
     } catch (error: unknown) {
       this.logger.error(getPoolsError(error, 'raydium'));

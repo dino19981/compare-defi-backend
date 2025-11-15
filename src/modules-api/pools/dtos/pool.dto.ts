@@ -12,6 +12,8 @@ import { ChainDto } from 'src/shared/dtos/chain.dto';
 import { PoolItemPlatformDto } from './poolItemPlatformDto.dto';
 import { PoolItemBadge, PoolPlatform } from '../types';
 import { PoolItemTokenDto } from './poolItemToken.dto';
+import { MetaDto } from 'src/shared/dtos/meta.dto';
+import { PaginationDto } from 'src/shared/dtos/pagination.dto';
 
 export class PoolItemDto {
   @ApiProperty({ description: 'Уникальный идентификатор', example: 'pool_001' })
@@ -66,16 +68,6 @@ export class PoolItemDto {
   badges?: PoolItemBadge[];
 }
 
-export class MetaDto {
-  @ApiProperty({
-    description: 'Платформы',
-    type: [String],
-    enum: PoolPlatform,
-    example: [],
-  })
-  platforms: PoolPlatform[];
-}
-
 export class PoolsResponseDto {
   @ApiProperty({
     description: 'Список пулов',
@@ -97,4 +89,15 @@ export class PoolsResponseDto {
   @ValidateNested()
   @Type(() => MetaDto)
   meta: MetaDto;
+
+  @ApiProperty({
+    description: 'Пагинация',
+    type: PaginationDto,
+    example: {
+      totalItems: 100,
+    },
+  })
+  @ValidateNested()
+  @Type(() => PaginationDto)
+  pagination: PaginationDto;
 }

@@ -1,5 +1,4 @@
 import { HtxEarnDto } from '@modules/htx/types';
-import { isAvailableTokenForEarnings } from '../helpers';
 import { v4 as uuid } from 'uuid';
 import {
   EarnItem,
@@ -8,15 +7,18 @@ import {
   infinityValue,
 } from '../types';
 import { EarnPlatform } from '../types';
+import { findTokenDataByName, TokenModel } from '@shared-modules/tokens';
+import { addAnalyticsToLink } from '@shared-modules/analytics';
 
 // dual invest и прочая залупа, которая не подходит под наши условия
 const badEnumTypes = [6, 10, 11];
 
-export const formatHtxEarn = (items: HtxEarnDto[]) => {
+export const formatHtxEarn = (
+  items: HtxEarnDto[],
+  tokens: Record<string, TokenModel>,
+) => {
   return items.reduce((acc: EarnItem[], item) => {
-    if (!isAvailableTokenForEarnings(item.currency)) {
-      return acc;
-    }
+    const token = findTokenDataByName(item.currency, tokens);
 
     item.projectList.forEach((product) => {
       if (
@@ -32,11 +34,14 @@ export const formatHtxEarn = (items: HtxEarnDto[]) => {
         id: uuid(),
         token: {
           name: item.currency,
+          icon: token?.image || item.icon,
         },
         periodType: 'flexible',
         duration: getDuration(product.term),
         platform: {
-          link: 'https://www.htx.com/ru-ru/financial/earn/?type=limit&invite_code=8czja223',
+          link: addAnalyticsToLink(
+            'https://www.htx.com/financial/earn/?type=limit&invite_code=8czja223',
+          ),
           name: EarnPlatform.Htx,
         },
         maxRate: apy,

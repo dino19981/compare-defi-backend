@@ -4,26 +4,27 @@ import {
   EarnItemLevel,
   infinityValue,
 } from '../types';
-import { isAvailableTokenForEarnings } from '../helpers';
 import { KucoinEarnDto } from '@modules/kukoin/types';
 import { v4 as uuid } from 'uuid';
 import { EarnPlatform } from '../types';
+import { findTokenDataByName, TokenModel } from '@shared-modules/tokens';
+import { addAnalyticsToLink } from '@shared-modules/analytics';
 
-const badCategories = ['SHARKFIN', 'Shark Fin'];
 const maxCount = 3;
 
-export const formatKukoinEarn = (items: KucoinEarnDto[]) => {
+export const formatKukoinEarn = (
+  items: KucoinEarnDto[],
+  tokens: Record<string, TokenModel>,
+) => {
   return items.reduce((acc: EarnItem[], item) => {
-    if (!isAvailableTokenForEarnings(item.currency)) {
-      return acc;
-    }
-
     let count = 0;
 
     item.products.forEach((product) => {
-      if (badCategories.includes(product.category)) {
+      if (product.category.toLowerCase().trim().includes('shark')) {
         return;
       }
+
+      const token = findTokenDataByName(item.currency, tokens);
 
       if (count >= maxCount) {
         return;
@@ -35,11 +36,12 @@ export const formatKukoinEarn = (items: KucoinEarnDto[]) => {
         id: uuid(),
         token: {
           name: item.currency,
+          icon: token?.image,
         },
         periodType: 'flexible',
         platform: {
-          link: 'https://www.kucoin.com/ru/earn',
-          refLink: 'https://www.kucoin.com/r/rf/A1LX17VF',
+          link: addAnalyticsToLink('https://www.kucoin.com/ru/earn'),
+          refLink: addAnalyticsToLink('https://www.kucoin.com/r/rf/A1LX17VF'),
           name: EarnPlatform.Kucoin,
         },
         maxRate: product.apr ? +product.apr : +product.total_apr,

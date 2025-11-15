@@ -33,7 +33,20 @@ export class BinanceService {
     try {
       const response = await firstValueFrom(
         this.httpService.get<BinanceEarnsDto>(
-          '/earn/v1/friendly/finance-earn/homepage/overview?pageSize=100',
+          '/earn/v1/friendly/finance-earn/simple-earn/homepage/details',
+          {
+            params: {
+              requestSource: 'WEB',
+              pageIndex: 1,
+              pageSize: 200,
+              includeEthStaking: true,
+              includeSolStaking: true,
+              includeP2pLoan: true,
+              includeP2pLoanSupply: true,
+              includeRWUSD: true,
+              simpleEarnType: 'ALL',
+            },
+          },
         ),
       );
 
