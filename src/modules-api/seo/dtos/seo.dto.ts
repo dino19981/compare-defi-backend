@@ -27,14 +27,14 @@ export class SeoDto {
   pageDescription: SeoPageDescription[];
 
   @ApiProperty({ description: 'faq' })
-  @ValidateNested({ each: true })
+  @ValidateNested()
   @Type(() => SeoFaqDto)
   faq: SeoFaqDto;
 
-  @ApiProperty({ description: 'inner links' })
+  @ApiProperty({ type: SeoInnerLinksDto, description: 'inner links' })
   @ValidateNested({ each: true })
   @Type(() => SeoInnerLinksDto)
-  innerLinks: SeoInnerLinksDto[];
+  innerLinks: SeoInnerLinksDto;
 }
 
 export class SeoByLanguageDto {

@@ -1,7 +1,7 @@
-import { v4 as uuidv4 } from 'uuid';
 import { EarnItem, EarnItemLevel, infinityValue } from '../types';
 import { findTokenDataByName, TokenModel } from '@shared-modules/tokens';
 import { addAnalyticsToLink } from '@shared-modules/analytics';
+import { buildEarnItemId } from '../helpers';
 
 export interface LidoEarnDto {
   name: string;
@@ -16,8 +16,7 @@ export const formatLidoEarn = (
   return data.map((item) => {
     const token = findTokenDataByName('ETH', tokens);
 
-    return {
-      id: uuidv4(),
+    const data: Omit<EarnItem, 'id'> = {
       token: {
         name: 'ETH',
         icon: token?.image,
@@ -30,6 +29,11 @@ export const formatLidoEarn = (
       maxRate: item.apr,
       productLevel: EarnItemLevel.Beginner,
       duration: infinityValue,
+    };
+
+    return {
+      id: buildEarnItemId(data),
+      ...data,
     };
   });
 };

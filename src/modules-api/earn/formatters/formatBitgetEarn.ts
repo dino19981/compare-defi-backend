@@ -1,9 +1,9 @@
 import { BitgetEarnDto } from '@modules/bitget/types';
 import { EarnItem, EarnItemLevel, infinityValue } from '../types';
 import { EarnPlatform } from '../types';
-import { v4 as uuidv4 } from 'uuid';
 import { findTokenDataByName, TokenModel } from '@shared-modules/tokens';
 import { addAnalyticsToLink } from '@shared-modules/analytics';
+import { buildEarnItemId } from '../helpers';
 
 export const formatBitgetEarn = (
   items: BitgetEarnDto[],
@@ -12,8 +12,7 @@ export const formatBitgetEarn = (
   return items.reduce((acc: EarnItem[], item) => {
     const token = findTokenDataByName(item.coin, tokens);
 
-    acc.push({
-      id: uuidv4(),
+    const data: Omit<EarnItem, 'id'> = {
       name: item.coin,
       token: {
         name: item.coin,
@@ -37,6 +36,11 @@ export const formatBitgetEarn = (
       }),
       duration: item.periodType === 'flexible' ? infinityValue : +item.period,
       productLevel: item.productLevel.toLowerCase() as never as EarnItemLevel,
+    };
+
+    acc.push({
+      id: buildEarnItemId(data),
+      ...data,
     });
 
     return acc;

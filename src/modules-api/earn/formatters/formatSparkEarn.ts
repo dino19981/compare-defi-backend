@@ -1,9 +1,9 @@
 import { SparkEarnDto } from '@modules/spark/types';
-import { v4 as uuidv4 } from 'uuid';
-import { EarnItemLevel, infinityValue } from '../types';
+import { EarnItem, EarnItemLevel, infinityValue } from '../types';
 import { EarnPlatform } from '../types';
 import { findTokenDataByName, TokenModel } from '@shared-modules/tokens';
 import { addAnalyticsToLink } from '@shared-modules/analytics';
+import { buildEarnItemId } from '../helpers';
 
 const coins = ['USDT', 'USDC'];
 
@@ -18,8 +18,7 @@ export function formatSparkEarn(
   return coins.map((coin) => {
     const token = findTokenDataByName(coin, tokens);
 
-    return {
-      id: uuidv4(),
+    const _data: Omit<EarnItem, 'id'> = {
       token: {
         name: coin,
         icon: token?.image,
@@ -32,6 +31,11 @@ export function formatSparkEarn(
       maxRate: +data.rate * 100,
       productLevel: EarnItemLevel.Beginner,
       duration: infinityValue,
+    };
+
+    return {
+      id: buildEarnItemId(_data),
+      ..._data,
     };
   });
 }

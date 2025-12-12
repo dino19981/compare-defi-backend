@@ -13,7 +13,7 @@ export class EarnDataJob {
     this.logger.log('Starting earn data collection job...');
 
     try {
-      const earnData = await this.earnService.saveEarnItemsInDb();
+      const earnData = await this.earnService.smartUpdateEarnItemsInDb();
 
       this.logger.log(
         `Earn data saved to db. Total items: ${earnData.data.length}`,

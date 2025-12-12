@@ -1,6 +1,9 @@
 export enum HtxEarnType {
   Recommended = 'recommended',
-  NewUsers = 'new_users',
+  // NewUsers = 'new_users',
+  Flexible = 'flexible',
+  Fixed = 'fixed',
+  LimitList = 'limitList',
 }
 
 export interface HtxEarnsDto {
@@ -17,6 +20,7 @@ export interface HtxEarnDto {
 }
 
 export interface HtxEarnProductDto {
+  productId: string;
   viewYearRate: number;
   projectEnumType: number;
   term: number;
@@ -28,6 +32,7 @@ export interface HtxNewUsersEarnsDto {
 }
 
 export interface HtxNewUserEarnDto {
+  productId: string;
   viewYearRate: number;
   projectEnumType: number;
   term: number;

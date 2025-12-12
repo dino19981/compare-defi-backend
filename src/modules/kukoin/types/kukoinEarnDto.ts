@@ -12,6 +12,7 @@ export interface KucoinEarnDto {
 }
 
 export interface KucoinEarnProductDto {
+  product_id: number;
   // number
   apr: string;
   // number

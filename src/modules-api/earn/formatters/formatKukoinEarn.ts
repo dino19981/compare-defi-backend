@@ -5,10 +5,10 @@ import {
   infinityValue,
 } from '../types';
 import { KucoinEarnDto } from '@modules/kukoin/types';
-import { v4 as uuid } from 'uuid';
 import { EarnPlatform } from '../types';
 import { findTokenDataByName, TokenModel } from '@shared-modules/tokens';
 import { addAnalyticsToLink } from '@shared-modules/analytics';
+import { buildEarnItemId } from '../helpers';
 
 const maxCount = 3;
 
@@ -32,8 +32,7 @@ export const formatKukoinEarn = (
 
       count++;
 
-      acc.push({
-        id: uuid(),
+      const data: Omit<EarnItem, 'id'> = {
         token: {
           name: item.currency,
           icon: token?.image,
@@ -50,6 +49,11 @@ export const formatKukoinEarn = (
         badges: product?.tags?.includes('NEWBIE')
           ? [EarnItemBadge.ForNewUsers, EarnItemBadge.SmallLimit]
           : undefined,
+      };
+
+      acc.push({
+        id: buildEarnItemId(data, [product.product_id]),
+        ...data,
       });
     });
 

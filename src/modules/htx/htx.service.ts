@@ -6,6 +6,7 @@ import {
   HtxEarnDto,
   HtxEarnsDto,
   HtxEarnType,
+  HtxNewUserEarnDto,
   HtxNewUsersEarnsDto,
 } from './types';
 import { getEarnError } from 'src/helpers/earn';
@@ -33,13 +34,26 @@ export class HtxService {
 
   async getEarnItems() {
     try {
-      const [recommendedProjects, newUsersProjects] = await Promise.all([
+      const [
+        recommendedProjects,
+        // newUsersProjects,
+        flexibleProjects,
+        fixedProjects,
+        limitListProjects,
+      ] = await Promise.all([
         this.getRecommendedEarnProjects(),
-        this.getNewUsersEarnProjects(),
+        // this.getNewUsersEarnProjects(),
+        this.getFlexibleEarnProjects(),
+        this.getFixedEarnProjects(),
+        this.getLimitListEarnProjects(),
       ]);
-      console.log(newUsersProjects.length, 'newUsersProjects');
 
-      return [...recommendedProjects, ...newUsersProjects];
+      return [
+        ...recommendedProjects,
+        ...flexibleProjects,
+        ...fixedProjects,
+        ...limitListProjects,
+      ];
     } catch (error: unknown) {
       this.logger.error(getEarnError(error, 'htx'));
       return [];
@@ -64,23 +78,128 @@ export class HtxService {
     }
   }
 
-  private async getNewUsersEarnProjects(): Promise<HtxEarnDto[]> {
+  private async getFlexibleEarnProjects(): Promise<HtxEarnDto[]> {
     try {
-      const url = `/-/x/hbg/v4/saving/mining/project/queryNewUserList?page=1&holdCurrency=0&r=l499lv`;
+      const url = `/-/x/hbg/v4/saving/mining/project/queryYbbList?holdCurrency=0&r=ccemy`;
 
-      const response = await firstValueFrom(
-        this.httpService.get<HtxNewUsersEarnsDto>(url),
+      const pagesCount = 27;
+
+      const promisesResult = await Promise.allSettled(
+        Array.from({ length: pagesCount }).map(async (item, idx) =>
+          firstValueFrom(
+            this.httpService.get<HtxNewUsersEarnsDto>(`${url}&page=${idx + 1}`),
+          ),
+        ),
       );
 
-      return response.data.data.map((item) => ({
+      const result = promisesResult.reduce((acc: HtxNewUserEarnDto[], res) => {
+        if (res.status === 'fulfilled') {
+          acc.push(...res.value.data.data);
+        }
+        return acc;
+      }, []);
+
+      return result.map((item) => ({
         currency: item.currency,
         icon: item.icon,
         projectList: [item],
-        type: HtxEarnType.NewUsers,
+        type: HtxEarnType.Flexible,
       }));
     } catch (error: unknown) {
-      this.logger.error(getEarnError(error, 'htx'));
+      this.logger.error(getEarnError(error, 'htx flexible projects'));
+
       return [];
     }
   }
+
+  private async getFixedEarnProjects(): Promise<HtxEarnDto[]> {
+    try {
+      const url = `/-/x/hbg/v4/saving/mining/project/queryFixedList?holdCurrency=0&r=r5mmys`;
+
+      const pagesCount = 3;
+
+      const promisesResult = await Promise.allSettled(
+        Array.from({ length: pagesCount }).map(async (item, idx) =>
+          firstValueFrom(
+            this.httpService.get<HtxNewUsersEarnsDto>(`${url}&page=${idx + 1}`),
+          ),
+        ),
+      );
+
+      const result = promisesResult.reduce((acc: HtxNewUserEarnDto[], res) => {
+        if (res.status === 'fulfilled') {
+          acc.push(...res.value.data.data);
+        }
+        return acc;
+      }, []);
+
+      return result.map((item) => ({
+        currency: item.currency,
+        icon: item.icon,
+        projectList: [item],
+        type: HtxEarnType.Fixed,
+      }));
+    } catch (error: unknown) {
+      this.logger.error(getEarnError(error, 'htx flexible projects'));
+
+      return [];
+    }
+  }
+
+  private async getLimitListEarnProjects(): Promise<HtxEarnDto[]> {
+    try {
+      const url = `/-/x/hbg/v4/saving/mining/project/queryLimitList?holdCurrency=0&r=ew2oxb`;
+
+      const pagesCount = 2;
+
+      const promisesResult = await Promise.allSettled(
+        Array.from({ length: pagesCount }).map(async (item, idx) =>
+          firstValueFrom(
+            this.httpService.get<HtxNewUsersEarnsDto>(`${url}&page=${idx + 1}`),
+          ),
+        ),
+      );
+
+      const result = promisesResult.reduce((acc: HtxNewUserEarnDto[], res) => {
+        if (res.status === 'fulfilled') {
+          acc.push(...res.value.data.data);
+        }
+        return acc;
+      }, []);
+
+      return result.map((item) => ({
+        currency: item.currency,
+        icon: item.icon,
+        projectList: [item],
+        type: HtxEarnType.LimitList,
+      }));
+    } catch (error: unknown) {
+      this.logger.error(getEarnError(error, 'htx flexible projects'));
+
+      return [];
+    }
+  }
+
+  /**
+   * Я не понял откуда этот запрос, куда переводить пользователя для стейкинга?
+   */
+  // private async getNewUsersEarnProjects(): Promise<HtxEarnDto[]> {
+  //   try {
+  //     const url = `/-/x/hbg/v4/saving/mining/project/queryNewUserList?page=1&holdCurrency=0&r=l499lv`;
+
+  //     const response = await firstValueFrom(
+  //       this.httpService.get<HtxNewUsersEarnsDto>(url),
+  //     );
+
+  //     return response.data.data.map((item) => ({
+  //       currency: item.currency,
+  //       icon: item.icon,
+  //       projectList: [item],
+  //       type: HtxEarnType.NewUsers,
+  //     }));
+  //   } catch (error: unknown) {
+  //     this.logger.error(getEarnError(error, 'htx'));
+  //     return [];
+  //   }
+  // }
 }

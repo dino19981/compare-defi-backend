@@ -102,13 +102,6 @@ export async function formatPancakeSwapPools(
     tokenImageBySymbol[imageUrl.symbol.toLowerCase()] = imageUrl.imageUrl;
   });
 
-  console.log(
-    bad,
-    Object.keys(tokenImageBySymbol).length,
-    tokenImageBySymbol,
-    'tokenImageBySymboltokenImageBySymboltokenImageBySymboltokenImageBySymbol',
-  );
-
   return items.reduce((acc: PoolItem[], item) => {
     const chain = chains[item.chainId] || {
       name: 'Unknown',

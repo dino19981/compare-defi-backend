@@ -1,9 +1,9 @@
 import { OkxEarnDto } from 'src/modules/okx/types';
 import { EarnItem, EarnItemLevel, infinityValue } from '../types';
-import { v4 as uuid } from 'uuid';
 import { EarnPlatform } from '../types';
 import { findTokenDataByName, TokenModel } from '@shared-modules/tokens';
 import { addAnalyticsToLink } from '@shared-modules/analytics';
+import { buildEarnItemId } from '../helpers';
 
 export const formatOkxEarn = (
   items: OkxEarnDto[],
@@ -12,8 +12,7 @@ export const formatOkxEarn = (
   return items.reduce((acc: EarnItem[], item) => {
     const token = findTokenDataByName(item.investCurrency.currencyName, tokens);
 
-    acc.push({
-      id: uuid(),
+    const data: Omit<EarnItem, 'id'> = {
       token: {
         name: item.investCurrency.currencyName,
         icon: token?.image || item.investCurrency.currencyIcon,
@@ -27,6 +26,11 @@ export const formatOkxEarn = (
       },
       maxRate: Math.max(...item.rate.rateNum.value.map(Number)),
       productLevel: EarnItemLevel.Beginner,
+    };
+
+    acc.push({
+      id: buildEarnItemId(data),
+      ...data,
     });
 
     return acc;

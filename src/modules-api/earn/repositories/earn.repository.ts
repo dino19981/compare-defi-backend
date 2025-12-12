@@ -3,6 +3,7 @@ import { InjectModel, InjectConnection } from '@nestjs/mongoose';
 import { Model, Connection } from 'mongoose';
 import { EarnEntity, EarnDocument } from '../entities/earn.entity';
 import { EarnItemDto, EarnRequest } from '../dtos/earn.dto';
+import { keyBy } from 'lodash';
 
 @Injectable()
 export class EarnRepository {
@@ -24,7 +25,6 @@ export class EarnRepository {
       this.earnModel.countDocuments(filter),
     ]);
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return {
       data: data.map((item) => this.formatToEarnItem(item)),
       total,
@@ -54,6 +54,77 @@ export class EarnRepository {
 
   async saveMany(data: EarnItemDto[]): Promise<EarnItemDto[]> {
     await this.earnModel.insertMany(data);
+    return data;
+  }
+
+  /**
+   * 1) Если не пришло обновление для какого-то earn item, то удаляем его из базы
+   * 2) Если какого то earn item нет в базе а он пришел в обновлении, то добавляем его в базу
+   */
+  async smartUpdate(data: EarnItemDto[]): Promise<EarnItemDto[]> {
+    const currentEarns = this.earnModel.find({});
+    const dataById = keyBy(data, 'id');
+
+    const BATCH_SIZE = 1000;
+    const updates: any[] = [];
+    const deletes: string[] = [];
+
+    const currentEarnsCount = await currentEarns.countDocuments();
+
+    // Если база пустая, то просто сохраняем все данные
+    if (currentEarnsCount === 0) {
+      console.log(`Сохранение earn в пустую базу, кол-во - ${data.length} шт.`);
+      return this.saveMany(data);
+    }
+
+    for await (const doc of currentEarns) {
+      const newData = dataById[doc.id];
+
+      if (!newData) {
+        console.log(doc, 'удаляется');
+
+        deletes.push(doc.id);
+        continue;
+      }
+      updates.push({
+        updateOne: {
+          filter: { _id: doc._id },
+          update: {
+            $set: newData,
+          },
+        },
+      });
+
+      delete dataById[doc.id];
+
+      if (updates.length === BATCH_SIZE) {
+        console.log(`Обновлены ${updates.length} earn items`);
+
+        await this.earnModel.bulkWrite(updates, { ordered: false });
+        updates.length = 0;
+      }
+    }
+
+    if (updates.length > 0) {
+      console.log(`Обновлены ${updates.length} earn items после цикла`);
+
+      await this.earnModel.bulkWrite(updates, { ordered: false });
+    }
+
+    if (Object.keys(dataById).length > 0) {
+      console.log(
+        `Добавлены новые earn items ${Object.keys(dataById).length}}`,
+      );
+
+      await this.earnModel.insertMany(Object.values(dataById));
+    }
+
+    if (deletes.length > 0) {
+      console.log(`Удалены earn items ${deletes.length}`);
+
+      await this.earnModel.deleteMany({ id: { $in: deletes } });
+    }
+
     return data;
   }
 

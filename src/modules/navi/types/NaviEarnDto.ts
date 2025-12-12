@@ -3,11 +3,13 @@ export interface NaviEarnDto {
 }
 
 export interface NaviEarnItemDto {
-  token: {
-    symbol: string;
+  id: string;
+  name: string;
+  apy7d: {
+    value: number;
   };
-  supplyIncentiveApyInfo: {
-    vaultApr: string;
-    apy: string;
+  apy30d: {
+    value: number;
   };
+  instantAPR: number;
 }

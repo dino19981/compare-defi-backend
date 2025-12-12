@@ -16,7 +16,7 @@ interface BinanceProductSummary {
   // // number
   // minApr: string;
   productId: string;
-  duration: string[];
+  duration: string;
 }
 
 export enum BinanceProductSummaryType {

@@ -20,17 +20,9 @@ export class EarnMetaRepository {
   }
 
   async replace(data: EarnMetaDto): Promise<EarnMetaDto> {
-    const session = await this.connection.startSession();
+    await this.earnMetaModel.deleteMany({});
+    await this.earnMetaModel.create([data]);
 
-    try {
-      await session.withTransaction(async () => {
-        await this.earnMetaModel.deleteMany({}, { session });
-        await this.earnMetaModel.create([data], { session });
-      });
-
-      return data;
-    } finally {
-      await session.endSession();
-    }
+    return data;
   }
 }

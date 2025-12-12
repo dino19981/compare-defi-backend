@@ -1,10 +1,10 @@
 import { VenusEarnItemDto } from '@modules/venus/types';
-import { v4 as uuidv4 } from 'uuid';
 import { EarnItem, EarnItemLevel, infinityValue } from '../types';
 import { isAvailableTokenForEarnings } from '../helpers';
 import { EarnPlatform } from '../types';
 import { findTokenDataByName, TokenModel } from '@shared-modules/tokens';
 import { addAnalyticsToLink } from '@shared-modules/analytics';
+import { buildEarnItemId } from '../helpers';
 
 export function formatVenusEarn(
   items: VenusEarnItemDto[],
@@ -48,8 +48,7 @@ export function formatVenusEarnItem(
 ): EarnItem {
   const token = findTokenDataByName(item.underlyingSymbol, tokens);
 
-  return {
-    id: uuidv4(),
+  const data: Omit<EarnItem, 'id'> = {
     token: {
       name: item.underlyingSymbol === 'USDe' ? 'USDE' : item.underlyingSymbol,
       icon: token?.image,
@@ -62,5 +61,10 @@ export function formatVenusEarnItem(
     maxRate: +item.supplyApy,
     duration: infinityValue,
     productLevel: EarnItemLevel.Beginner,
+  };
+
+  return {
+    id: buildEarnItemId(data),
+    ...data,
   };
 }

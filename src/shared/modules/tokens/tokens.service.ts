@@ -67,8 +67,6 @@ export class TokensService {
   }
 
   private async getTokensCoinGecko(): Promise<CoinGeckoTokenDto[]> {
-    console.log('getTokensCoinGecko');
-
     try {
       const result: CoinGeckoTokenDto[] = [];
 

@@ -7,9 +7,9 @@ import {
 import { AvailableTokensForEarn } from '../helpers';
 import { MexcEarnItem, MexcEarnProduct } from '@modules/mexc/types';
 import { EarnPlatform } from '../types';
-import { v4 as uuidv4 } from 'uuid';
 import { findTokenDataByName, TokenModel } from '@shared-modules/tokens';
 import { addAnalyticsToLink } from '@shared-modules/analytics';
+import { buildEarnItemId } from '../helpers';
 
 const forNewUsersLimits: Record<AvailableTokensForEarn, number> = {
   USDT: 100,
@@ -46,8 +46,7 @@ export function formatMexcEarn(
           : +product.profitRate * 100;
         const isForNewUsers = apy > forNewUsersLimits[item.currency];
 
-        acc.push({
-          id: uuidv4(),
+        const data: Omit<EarnItem, 'id'> = {
           token: {
             name: item.currency,
             icon: token?.image,
@@ -68,6 +67,11 @@ export function formatMexcEarn(
           badges: isForNewUsers
             ? [EarnItemBadge.ForNewUsers, EarnItemBadge.SmallLimit]
             : undefined,
+        };
+
+        acc.push({
+          id: buildEarnItemId(data, [product.id]),
+          ...data,
         });
       },
     );

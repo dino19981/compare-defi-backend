@@ -1,5 +1,5 @@
 {
-    "pathname": "earn",
+    "pathname": "/earn",
     "data": {
         "ru": {
             "head": {
@@ -9,12 +9,8 @@
             "title": "Сравнение стейкинга криптовалют",
             "description": "Лучшие ставки и условия стейкинга криптовалют – выберите оптимальный вариант.",
             "pageDescription": [
-                {
-                    "text": "Лучшие ставки и условия стейкинга криптовалют – выберите оптимальный вариант."
-                },
-                {
-                    "text": "Лучшие ставки и условия стейкинга криптовалют – выберите оптимальный вариант."
-                }
+                "<p>Лучшие ставки и условия стейкинга криптовалют – выберите оптимальный вариант.</p>",
+                "<p>Лучшие ставки и условия стейкинга криптовалют – выберите оптимальный вариант.</p>"
             ],
             "faq": {
                 "title": "Сравнение стейкинга криптовалют",
@@ -27,10 +23,15 @@
             },
             "innerLinks": {
                 "title": "Сравнение стейкинга криптовалют",
-                "links": [
+                "items": [
                     {
-                        "name": "Сравнение стейкинга криптовалют",
-                        "link": "https://www.google.com"
+                        "title": "Сравнение стейкинга криптовалют",
+                        "links": [
+                            {
+                                "title": "Сравнение стейкинга криптовалют",
+                                "link": "https://www.google.com"
+                            }
+                        ]
                     }
                 ]
             }
@@ -43,9 +44,8 @@
             "title": "Earn comparison",
             "description": "Best staking rates and conditions – choose the optimal variant.",
             "pageDescription": [
-                {
-                    "text": "Best staking rates and conditions – choose the optimal variant."
-                }
+                "<p>Best staking rates and conditions – choose the optimal variant.</p>",
+                "<p>Best staking rates and conditions – choose the optimal variant.</p>"
             ],
             "faq": {
                 "title": "Earn comparison",
@@ -58,10 +58,15 @@
             },
             "innerLinks": {
                 "title": "Earn comparison",
-                "links": [
+                "items": [
                     {
-                        "name": "Earn comparison",
-                        "link": "https://www.google.com"
+                        "title": "Earn comparison",
+                        "links": [
+                            {
+                                "title": "Earn comparison",
+                                "link": "https://www.google.com"
+                            }
+                        ]
                     }
                 ]
             }

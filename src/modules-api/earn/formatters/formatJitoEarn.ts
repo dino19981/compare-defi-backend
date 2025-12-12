@@ -1,8 +1,8 @@
 import { EarnItem, EarnItemLevel, infinityValue } from '../types';
-import { v4 as uuid } from 'uuid';
 import { EarnPlatform } from '../types';
 import { findTokenDataByName, TokenModel } from '@shared-modules/tokens';
 import { addAnalyticsToLink } from '@shared-modules/analytics';
+import { buildEarnItemId } from '../helpers';
 
 export const formatJitoEarn = (
   items: { name: string; apr: number }[],
@@ -11,8 +11,7 @@ export const formatJitoEarn = (
   return items.reduce((acc: EarnItem[], item) => {
     const token = findTokenDataByName(item.name, tokens);
 
-    acc.push({
-      id: uuid(),
+    const data: Omit<EarnItem, 'id'> = {
       token: {
         name: item.name,
         icon: token?.image,
@@ -25,6 +24,11 @@ export const formatJitoEarn = (
       maxRate: +item.apr * 100,
       duration: infinityValue,
       productLevel: EarnItemLevel.Beginner,
+    };
+
+    acc.push({
+      id: buildEarnItemId(data),
+      ...data,
     });
 
     return acc;

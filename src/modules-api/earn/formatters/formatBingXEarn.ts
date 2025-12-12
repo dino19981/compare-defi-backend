@@ -6,9 +6,9 @@ import {
 } from '../types/EarnItem';
 import { BingXEarnDto, BingxEarnProduct } from '@modules/bingX/types';
 import { EarnPlatform } from '../types';
-import { v4 as uuidv4 } from 'uuid';
 import { findTokenDataByName, TokenModel } from '@shared-modules/tokens';
 import { addAnalyticsToLink } from '@shared-modules/analytics';
+import { buildEarnItemId } from '../helpers';
 
 export function formatBingXEarn(
   items: BingXEarnDto[],
@@ -22,8 +22,7 @@ export function formatBingXEarn(
         return;
       }
 
-      acc.push({
-        id: uuidv4(),
+      const data: Omit<EarnItem, 'id'> = {
         name: product.productName,
         token: {
           name: item.assetName,
@@ -39,6 +38,11 @@ export function formatBingXEarn(
         },
         maxRate: +product.apy,
         productLevel: getProductLevel(product.tags),
+      };
+
+      acc.push({
+        id: buildEarnItemId(data),
+        ...data,
       });
     });
 

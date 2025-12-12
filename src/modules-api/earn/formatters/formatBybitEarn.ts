@@ -1,6 +1,5 @@
 import { EarnItem, EarnItemLevel, infinityValue } from '../types/EarnItem';
 import { BybitEarnDto, BybitProductType } from '@modules/bybit/types';
-import { v4 as uuidv4 } from 'uuid';
 import {
   excludedByBitStackingProductTypes,
   getEarnItemNameByProductType,
@@ -8,6 +7,7 @@ import {
 import { EarnPlatform } from '../types';
 import { findTokenDataByName, TokenModel } from '@shared-modules/tokens';
 import { addAnalyticsToLink } from '@shared-modules/analytics';
+import { buildEarnItemId } from '../helpers';
 
 export function formatBybitEarn(
   items: BybitEarnDto[],
@@ -23,8 +23,7 @@ export function formatBybitEarn(
         return;
       }
 
-      acc.push({
-        id: uuidv4(),
+      const data: Omit<EarnItem, 'id'> = {
         name: getEarnItemNameByProductType(productType.product_type),
         token: {
           name: item.tokenName!,
@@ -41,6 +40,11 @@ export function formatBybitEarn(
         rateSettings: getRateSettings(productType.tiered_apy_list),
         duration: getDuration(productType),
         productLevel: EarnItemLevel.Beginner,
+      };
+
+      acc.push({
+        id: buildEarnItemId(data),
+        ...data,
       });
     });
 

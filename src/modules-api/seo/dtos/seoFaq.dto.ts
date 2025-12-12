@@ -5,11 +5,11 @@ import { IsArray, IsString, ValidateNested } from 'class-validator';
 export class SeoFaqItemDto {
   @ApiProperty({ description: 'Question', example: 'Question' })
   @IsString()
-  title: string;
+  question: string;
 
   @ApiProperty({ description: 'Answer', example: 'Answer' })
   @IsString()
-  text: string;
+  answer: string;
 }
 
 export class SeoFaqDto {
@@ -17,7 +17,7 @@ export class SeoFaqDto {
   @IsString()
   title: string;
 
-  @ApiProperty({ description: 'Items', example: 'Items' })
+  @ApiProperty({ type: [SeoFaqItemDto], description: 'Items' })
   @ValidateNested({ each: true })
   @Type(() => SeoFaqItemDto)
   @IsArray()

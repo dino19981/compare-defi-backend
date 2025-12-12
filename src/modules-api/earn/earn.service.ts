@@ -20,7 +20,6 @@ import {
   formatLidoEarn,
   LidoEarnDto,
   formatVenusEarn,
-  formatNaviEarn,
   formatJitoEarn,
 } from './formatters';
 import { MexcService } from '@modules/mexc';
@@ -80,7 +79,7 @@ export class EarnService {
         sparkData,
         lidoData,
         venusData,
-        naviData,
+        // naviData,
         jitoData,
       ] = await Promise.allSettled([
         this.tokensService.getAllTokens(),
@@ -94,8 +93,8 @@ export class EarnService {
         this.mexcService.getEarnItems(),
         this.sparkService.getSavingsRates(),
         this.lidoService.getApr(),
-        this.venusService.getPools(),
-        this.naviService.getPools(),
+        this.venusService.getEarnItems(),
+        // this.naviService.getEarnItems(),
         this.jitoService.getApr(),
       ]);
 
@@ -135,9 +134,10 @@ export class EarnService {
         ...(venusData.status === 'fulfilled'
           ? formatVenusEarn(venusData.value, tokens)
           : []),
-        ...(naviData.status === 'fulfilled'
-          ? formatNaviEarn(naviData.value, tokens)
-          : []),
+        // Стремная история, нет нормального апи для earn
+        // ...(naviData.status === 'fulfilled'
+        //   ? formatNaviEarn(naviData.value, tokens)
+        //   : []),
         ...(jitoData.status === 'fulfilled'
           ? formatJitoEarn(jitoData.value, tokens)
           : []),
@@ -193,7 +193,7 @@ export class EarnService {
         !earnItems?.data?.length &&
         !Object.keys(query?.filter || {}).length
       ) {
-        await this.saveEarnItemsInDb();
+        await this.smartUpdateEarnItemsInDb();
         const [data, meta] = await Promise.all([
           this.earnRepository.findBy(query),
           this.earnMetaRepository.find(),
@@ -241,9 +241,20 @@ export class EarnService {
     }
   }
 
+  /** @deprecated use smartUpdateEarnItemsInDb instead */
   async saveEarnItemsInDb() {
     const earnData = await this.fetchEarnItems();
     await this.earnRepository.saveMany(earnData.data);
+
+    const meta = await this.collectMeta(earnData.data);
+    await this.earnMetaRepository.replace(meta);
+
+    return earnData;
+  }
+
+  async smartUpdateEarnItemsInDb() {
+    const earnData = await this.fetchEarnItems();
+    await this.earnRepository.smartUpdate(earnData.data);
 
     const meta = await this.collectMeta(earnData.data);
     await this.earnMetaRepository.replace(meta);

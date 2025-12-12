@@ -20,8 +20,6 @@ export class SeoRepository {
       .lean()
       .exec();
 
-    console.log('seoseoseosoea', data?.data?.[language], pathname, language);
-
     if (!data || !data.data[language]) {
       throw new NotFoundException(
         `SEO not found for pathname: ${pathname} and language: ${language}`,

@@ -12,7 +12,7 @@ export class VenusService {
 
   constructor(private readonly httpService: HttpService) {}
 
-  async getPools(): Promise<VenusEarnItemDto[]> {
+  async getEarnItems(): Promise<VenusEarnItemDto[]> {
     try {
       const response = await firstValueFrom(
         this.httpService.get<VenusEarnDto>(this.url, {

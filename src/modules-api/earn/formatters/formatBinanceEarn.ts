@@ -4,9 +4,9 @@ import {
 } from '@modules/binance/types/binanceEarnDto';
 import { EarnItem, EarnItemLevel, infinityValue } from '../types/EarnItem';
 import { EarnPlatform } from '../types';
-import { v4 as uuidv4 } from 'uuid';
 import { findTokenDataByName, TokenModel } from '@shared-modules/tokens';
 import { addAnalyticsToLink } from '@shared-modules/analytics';
+import { buildEarnItemId } from '../helpers';
 
 export function formatBinanceEarn(
   items: BinanceEarnDto[],
@@ -25,14 +25,13 @@ export function formatBinanceEarn(
     const tokenImage = findTokenDataByName(item.asset, tokens)?.image;
 
     simpleEarnData.forEach((product) => {
-      acc.push({
-        id: uuidv4(),
+      const data: Omit<EarnItem, 'id'> = {
         name: 'Simple Earn',
         token: {
           name: item.asset,
           icon: tokenImage,
         },
-        duration: infinityValue,
+        duration: product.duration == '0' ? infinityValue : +product.duration,
         periodType: 'flexible',
         platform: {
           link: addAnalyticsToLink(
@@ -42,6 +41,11 @@ export function formatBinanceEarn(
         },
         maxRate: +product.apy * 100,
         productLevel: EarnItemLevel.Beginner,
+      };
+
+      acc.push({
+        id: buildEarnItemId(data, [product.productId]),
+        ...data,
       });
     });
 
