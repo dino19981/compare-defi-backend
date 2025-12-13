@@ -12,16 +12,16 @@ import { addAnalyticsToLink } from '@shared-modules/analytics';
 import { buildEarnItemId } from '../helpers';
 
 const forNewUsersLimits: Record<AvailableTokensForEarn, number> = {
-  USDT: 100,
-  USDC: 100,
+  USDT: 401,
+  USDC: 401,
   ETH: 50,
   WETH: 50,
   BTC: 50,
   USDE: 50,
   SOL: 50,
   suiUSDT: 100,
-  wUSDT: 100,
-  wUSDC: 100,
+  wUSDT: 400,
+  wUSDC: 400,
   suiWBTC: 100,
   WBTC: 100,
   LBTC: 100,
@@ -39,58 +39,55 @@ export function formatMexcEarn(
   return items.reduce((acc: EarnItem[], item) => {
     const token = findTokenDataByName(item.currency, tokens);
 
-    [...(item.lockPosList || []), ...(item.holdPosList || [])].forEach(
-      (product) => {
-        const apy = product.stepRateList
-          ? (product.maxStepRate ?? 0) * 100
-          : +product.profitRate * 100;
-        const isForNewUsers = apy > forNewUsersLimits[item.currency];
+    item.financialProductList.forEach((product) => {
+      const apy = product.subsidyTieredFlag
+        ? +product.showApr
+        : +product.baseApr;
+      const isForNewUsers = apy > forNewUsersLimits[item.currency];
 
-        const data: Omit<EarnItem, 'id'> = {
-          token: {
-            name: item.currency,
-            icon: token?.image,
-          },
-          duration: isForNewUsers
-            ? (product.minLockDays ?? infinityValue)
-            : infinityValue,
-          periodType: 'flexible',
-          platform: {
-            link: addAnalyticsToLink(
-              'https://www.mexc.com/staking?inviteCode=3KJXS',
-            ),
-            name: EarnPlatform.Mexc,
-          },
-          maxRate: apy,
-          ...getRateSettings(product.stepRateList),
-          productLevel: EarnItemLevel.Beginner,
-          badges: isForNewUsers
-            ? [EarnItemBadge.ForNewUsers, EarnItemBadge.SmallLimit]
-            : undefined,
-        };
+      const data: Omit<EarnItem, 'id'> = {
+        token: {
+          name: item.currency,
+          icon: token?.image,
+        },
+        duration: product.fixedInvestPeriodCount ?? infinityValue,
+        periodType: 'flexible',
+        platform: {
+          link: addAnalyticsToLink(
+            'https://www.mexc.com/staking?inviteCode=3KJXS',
+          ),
+          name: EarnPlatform.Mexc,
+        },
+        maxRate: apy,
+        ...getRateSettings(product),
+        productLevel: EarnItemLevel.Beginner,
+        badges: isForNewUsers
+          ? [EarnItemBadge.ForNewUsers, EarnItemBadge.SmallLimit]
+          : undefined,
+      };
 
-        acc.push({
-          id: buildEarnItemId(data, [product.id]),
-          ...data,
-        });
-      },
-    );
+      acc.push({
+        id: buildEarnItemId(data, [product.financialId]),
+        ...data,
+      });
+    });
 
     return acc;
   }, []);
 }
 
-function getRateSettings(stepRateList: MexcEarnProduct['stepRateList']) {
+function getRateSettings(product: MexcEarnProduct) {
+  const stepRateList = product.tieredSubsidyApr;
+
   if (!stepRateList) {
     return {};
   }
 
   return {
     rateSettings: stepRateList.map((rate) => ({
-      min: +rate.startLockQuantity,
-      max:
-        rate.endLockQuantity === null ? infinityValue : +rate.endLockQuantity,
-      apy: +rate.stepRate * 100,
+      min: +rate.startQuantity,
+      max: rate.endQuantity === null ? infinityValue : +rate.endQuantity,
+      apy: +rate.apr + +product.baseApr,
     })),
   };
 }

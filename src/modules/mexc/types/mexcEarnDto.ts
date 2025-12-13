@@ -1,8 +1,8 @@
 export interface MexcEarnItem {
   currency: string;
   currencyId: string;
-  lockPosList: MexcEarnProduct[];
-  holdPosList: MexcEarnProduct[];
+  financialProductList: MexcEarnProduct[];
+  hasAprRange: boolean;
 }
 
 export interface MexcEarnsDto {
@@ -12,23 +12,25 @@ export interface MexcEarnsDto {
 }
 
 export interface MexcEarnProduct {
-  id: string;
+  financialId: string;
+  financialType: string;
+  investPeriodType: string;
+  /** duration is days. null if duration is infinity */
+  fixedInvestPeriodCount: number | null;
+  /** USDT */
   currency: string;
-  currencyId: string;
-  minLockDays: number;
-  profitRate: number;
-  maxStepRate?: number;
-  profitRangeStart: null;
-  profitRangeEnd: null;
-  totalRemain: string;
-  memberRemain: string;
-  totalLimit: string;
-  limitMax: string;
-  stakingType: string;
-  status: string;
-  stepRateList: {
-    startLockQuantity: string;
-    endLockQuantity: string;
-    stepRate: string;
+  /** '4.5' */
+  baseApr: string;
+  showApr: string;
+  soldOut: boolean;
+  /** Есть ли rateSettings */
+  subsidyTieredFlag: boolean;
+  tieredSubsidyApr?: {
+    /** '0' */
+    startQuantity: string;
+    /** '300' */
+    endQuantity: string;
+    /**'12' */
+    apr: string;
   }[];
 }

@@ -35,7 +35,7 @@ export function formatBinanceEarn(
         periodType: 'flexible',
         platform: {
           link: addAnalyticsToLink(
-            'https://www.binance.com/en/earn?ref=CPA_00CR5Q0KBD',
+            'https://www.binance.com/en/earn?ref=749200627',
           ),
           name: EarnPlatform.Binance,
         },

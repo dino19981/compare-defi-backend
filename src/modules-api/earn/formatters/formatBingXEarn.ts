@@ -34,6 +34,7 @@ export function formatBingXEarn(
           formatTieredApyRule(product.tieredApyRule)),
         platform: {
           link: addAnalyticsToLink('https://bingx.com/wealth/earn'),
+          refLink: 'https://bingxdao.com/invite/J2GMHY/',
           name: EarnPlatform.BingX,
         },
         maxRate: +product.apy,

@@ -1,12 +1,14 @@
 export type InfinityValue = 'Infinity';
 export const infinityValue: InfinityValue = 'Infinity';
 
+export type EarnItemPeriodType = 'flexible' | 'fixed';
+
 export interface EarnItem {
   id: string;
 
   // @посмотреть: нужны ли эти поля?
   name?: string;
-  periodType: 'flexible' | 'fixed';
+  periodType: EarnItemPeriodType;
 
   token: EarnItemToken;
   platform: EarnItemPlatform;

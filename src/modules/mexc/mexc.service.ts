@@ -29,11 +29,14 @@ export class MexcService {
   async getEarnItems() {
     try {
       const response = await firstValueFrom(
-        this.httpService.get<MexcEarnsDto>('/operateactivity/staking', {
-          headers: {
-            'User-Agent': 'PostmanRuntime/7.44.1',
+        this.httpService.get<MexcEarnsDto>(
+          '/financialactivity/financial/products/list/V2?',
+          {
+            headers: {
+              'User-Agent': 'PostmanRuntime/7.44.1',
+            },
           },
-        }),
+        ),
       );
 
       return response.data.data || [];
