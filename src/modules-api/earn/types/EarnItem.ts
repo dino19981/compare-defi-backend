@@ -22,6 +22,8 @@ export interface EarnItem {
   duration: number | InfinityValue;
 
   badges?: EarnItemBadge[];
+
+  positions: Record<string, number>;
 }
 
 export enum EarnItemLevel {

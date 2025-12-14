@@ -8,6 +8,7 @@ import { EarnPlatform } from '../types';
 import { findTokenDataByName, TokenModel } from '@shared-modules/tokens';
 import { addAnalyticsToLink } from '@shared-modules/analytics';
 import { buildEarnItemId } from '../helpers';
+import { DEFAULT_EARN_POSITIONS } from '../constants';
 
 export function formatBybitEarn(
   items: BybitEarnDto[],
@@ -21,6 +22,10 @@ export function formatBybitEarn(
         excludedByBitStackingProductTypes.includes(productType.product_type)
       ) {
         return;
+      }
+
+      if (item.tokenName?.toUpperCase() === 'USDT') {
+        console.log(item, 'qweqwewqeqweqwe');
       }
 
       const data: Omit<EarnItem, 'id'> = {
@@ -40,6 +45,7 @@ export function formatBybitEarn(
         rateSettings: getRateSettings(productType.tiered_apy_list),
         duration: getDuration(productType),
         productLevel: EarnItemLevel.Beginner,
+        positions: DEFAULT_EARN_POSITIONS,
       };
 
       acc.push({

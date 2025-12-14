@@ -3,7 +3,7 @@ import { Type } from 'class-transformer';
 import { IsEnum, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { SortDirection } from '../types';
 
-class Sort {
+export class Sort {
   @ApiProperty({
     description: 'Поле для сортировки',
     example: 'maxRate',

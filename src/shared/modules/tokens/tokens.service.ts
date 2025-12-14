@@ -37,7 +37,6 @@ export class TokensService {
   }
 
   async saveTokens() {
-    console.log('save tokens');
     const newTokens = await this.fetchTokens();
 
     if (newTokens.length) {
@@ -49,8 +48,6 @@ export class TokensService {
 
   private async fetchTokens(): Promise<TokenModel[]> {
     try {
-      console.log('fetch tokens');
-
       const [coinGeckoTokens] = await Promise.allSettled([
         this.getTokensCoinGecko(),
       ]);

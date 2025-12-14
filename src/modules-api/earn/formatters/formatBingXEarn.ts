@@ -9,6 +9,7 @@ import { EarnPlatform } from '../types';
 import { findTokenDataByName, TokenModel } from '@shared-modules/tokens';
 import { addAnalyticsToLink } from '@shared-modules/analytics';
 import { buildEarnItemId } from '../helpers';
+import { DEFAULT_EARN_POSITIONS } from '../constants';
 
 export function formatBingXEarn(
   items: BingXEarnDto[],
@@ -39,6 +40,7 @@ export function formatBingXEarn(
         },
         maxRate: +product.apy,
         productLevel: getProductLevel(product.tags),
+        positions: DEFAULT_EARN_POSITIONS,
       };
 
       acc.push({

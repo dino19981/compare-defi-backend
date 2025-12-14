@@ -33,6 +33,8 @@ import { TokensService } from 'src/shared/modules/tokens';
 import { EarnMetaDto } from './dtos/EarnMeta.dto';
 import { EarnMetaRepository } from './repositories/earnMeta.repository';
 import { RedisService } from '@shared-modules/redis';
+import { PagesSettingsDto } from './dtos/pagesSettings.dto';
+import { earnRoutes } from './constants';
 
 const DEFAULT_META: EarnMetaDto = {
   platforms: [],
@@ -262,6 +264,10 @@ export class EarnService {
     return earnData;
   }
 
+  async updateEarnItemsInwqeDb() {
+    await this.earnRepository.updatePositions();
+  }
+
   private async collectMeta(data?: EarnItemDto[]): Promise<EarnMetaDto> {
     if (!data) {
       data = await this.earnRepository.findAll();
@@ -285,6 +291,12 @@ export class EarnService {
       ...meta,
       platforms: Array.from(meta.platforms) as string[],
       tokens: Object.values(meta.tokens),
+    };
+  }
+
+  getPagesSettings(): PagesSettingsDto {
+    return {
+      data: earnRoutes,
     };
   }
 }

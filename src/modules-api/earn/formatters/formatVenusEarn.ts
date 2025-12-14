@@ -5,6 +5,7 @@ import { EarnPlatform } from '../types';
 import { findTokenDataByName, TokenModel } from '@shared-modules/tokens';
 import { addAnalyticsToLink } from '@shared-modules/analytics';
 import { buildEarnItemId } from '../helpers';
+import { DEFAULT_EARN_POSITIONS } from '../constants';
 
 export function formatVenusEarn(
   items: VenusEarnItemDto[],
@@ -61,6 +62,7 @@ export function formatVenusEarnItem(
     maxRate: +item.supplyApy,
     duration: infinityValue,
     productLevel: EarnItemLevel.Beginner,
+    positions: DEFAULT_EARN_POSITIONS,
   };
 
   return {

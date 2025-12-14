@@ -4,6 +4,7 @@ import { Connection, Model } from 'mongoose';
 import { TokenEntity, TokenDocument } from './token.entity';
 import { TokenModel } from './types/TokensDto';
 import { formatToLowerCaseTokenName } from './helpers';
+import { hardcodedTokens } from './constants';
 
 @Injectable()
 export class TokensRepository {
@@ -58,7 +59,7 @@ export class TokensRepository {
   }
 
   private formatBySymbol(data: TokenDocument[]): Record<string, TokenModel> {
-    return data.reduce(
+    const result = data.reduce(
       (acc, item) => {
         acc[formatToLowerCaseTokenName(item.symbol)] =
           this.formatToTokenModel(item);
@@ -67,5 +68,11 @@ export class TokensRepository {
       },
       {} as Record<string, TokenModel>,
     );
+
+    hardcodedTokens.forEach((token) => {
+      result[formatToLowerCaseTokenName(token.symbol)] = token;
+    });
+
+    return result;
   }
 }

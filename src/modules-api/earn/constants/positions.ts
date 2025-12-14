@@ -1,0 +1,5 @@
+export const DEFAULT_SEO_POSITION = 99999;
+
+export const DEFAULT_EARN_POSITIONS = {
+  seo: DEFAULT_SEO_POSITION,
+};

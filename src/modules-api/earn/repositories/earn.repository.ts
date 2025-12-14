@@ -4,6 +4,7 @@ import { Model, Connection } from 'mongoose';
 import { EarnEntity, EarnDocument } from '../entities/earn.entity';
 import { EarnItemDto, EarnRequest } from '../dtos/earn.dto';
 import { keyBy } from 'lodash';
+import { DEFAULT_SEO_POSITION } from '../constants';
 
 @Injectable()
 export class EarnRepository {
@@ -83,14 +84,25 @@ export class EarnRepository {
       if (!newData) {
         console.log(doc, 'удаляется');
 
+        if (
+          Object.keys(doc.positions).length > 0 &&
+          doc.positions?.seo !== DEFAULT_SEO_POSITION
+        ) {
+          console.log('Удален earn item с позициями!!!!', doc.positions);
+        }
+
         deletes.push(doc.id);
         continue;
       }
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { positions, ...restNewData } = newData;
+
       updates.push({
         updateOne: {
           filter: { _id: doc._id },
           update: {
-            $set: newData,
+            $set: restNewData,
           },
         },
       });
@@ -128,6 +140,39 @@ export class EarnRepository {
     return data;
   }
 
+  async updatePositions() {
+    const currentEarns = this.earnModel.find({});
+
+    const BATCH_SIZE = 1000;
+    const updates: any[] = [];
+
+    for await (const doc of currentEarns) {
+      if (!doc.positions.seo) {
+        updates.push({
+          updateOne: {
+            filter: { _id: doc._id },
+            update: {
+              $set: {
+                positions: {
+                  seo: 99999,
+                },
+              },
+            },
+          },
+        });
+      }
+
+      if (updates.length === BATCH_SIZE) {
+        await this.earnModel.bulkWrite(updates, { ordered: false });
+        updates.length = 0;
+      }
+    }
+
+    if (updates.length > 0) {
+      await this.earnModel.bulkWrite(updates, { ordered: false });
+    }
+  }
+
   private buildMongoFilter(filters: Record<string, any> | undefined): any {
     if (!filters) return {};
 
@@ -155,7 +200,7 @@ export class EarnRepository {
 
   private formatToEarnItem(item: EarnDocument): EarnItemDto {
     return {
-      id: item._id.toString(),
+      id: item.id,
       name: item.name,
       periodType: item.periodType,
       token: {
@@ -181,6 +226,7 @@ export class EarnRepository {
       ...(item.badges && {
         badges: [...item.badges],
       }),
+      positions: item.positions,
     };
   }
 }

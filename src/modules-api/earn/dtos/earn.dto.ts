@@ -7,6 +7,7 @@ import {
   IsArray,
   ValidateNested,
   IsOptional,
+  IsObject,
 } from 'class-validator';
 import { EarnItemLevel, EarnItemRateSettings } from '../types/EarnItem';
 import { EarnItemTokenDto } from './EarnItemToken.dto';
@@ -94,6 +95,10 @@ export class EarnItemDto {
   @IsOptional()
   @IsEnum(EarnItemBadge, { each: true })
   badges?: EarnItemBadge[];
+
+  @ApiProperty({ description: 'Позиции элемента на странице' })
+  @IsObject()
+  positions: Record<string, number>;
 }
 
 export class EarnResponseDto {

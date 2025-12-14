@@ -4,6 +4,7 @@ import { EarnPlatform } from '../types';
 import { findTokenDataByName, TokenModel } from '@shared-modules/tokens';
 import { addAnalyticsToLink } from '@shared-modules/analytics';
 import { buildEarnItemId } from '../helpers';
+import { DEFAULT_EARN_POSITIONS } from '../constants';
 
 export const formatBitgetEarn = (
   items: BitgetEarnDto[],
@@ -36,6 +37,7 @@ export const formatBitgetEarn = (
       }),
       duration: item.periodType === 'flexible' ? infinityValue : +item.period,
       productLevel: item.productLevel.toLowerCase() as never as EarnItemLevel,
+      positions: DEFAULT_EARN_POSITIONS,
     };
 
     acc.push({

@@ -6,8 +6,8 @@ const productTypeToName: Record<number, string> = {
   8: 'On-Chain Earn',
   9: 'Wealth Management',
 };
-
-export const excludedByBitStackingProductTypes = [2, 5];
+// Исключил 6 потому что выдавал айтем которого нет на байбите
+export const excludedByBitStackingProductTypes = [2, 5, 6];
 
 export const getEarnItemNameByProductType = (productType: number) => {
   return productTypeToName[productType];

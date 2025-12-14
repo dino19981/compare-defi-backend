@@ -3,6 +3,7 @@ import { EarnPlatform } from '../types';
 import { findTokenDataByName, TokenModel } from '@shared-modules/tokens';
 import { addAnalyticsToLink } from '@shared-modules/analytics';
 import { buildEarnItemId } from '../helpers';
+import { DEFAULT_EARN_POSITIONS } from '../constants';
 
 export const formatJitoEarn = (
   items: { name: string; apr: number }[],
@@ -24,6 +25,7 @@ export const formatJitoEarn = (
       maxRate: +item.apr * 100,
       duration: infinityValue,
       productLevel: EarnItemLevel.Beginner,
+      positions: DEFAULT_EARN_POSITIONS,
     };
 
     acc.push({

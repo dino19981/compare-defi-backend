@@ -9,6 +9,7 @@ import { EarnPlatform } from '../types';
 import { findTokenDataByName, TokenModel } from '@shared-modules/tokens';
 import { addAnalyticsToLink } from '@shared-modules/analytics';
 import { buildEarnItemId } from '../helpers';
+import { DEFAULT_EARN_POSITIONS } from '../constants';
 
 const maxCount = 3;
 
@@ -49,6 +50,7 @@ export const formatKukoinEarn = (
         badges: product?.tags?.includes('NEWBIE')
           ? [EarnItemBadge.ForNewUsers, EarnItemBadge.SmallLimit]
           : undefined,
+        positions: DEFAULT_EARN_POSITIONS,
       };
 
       acc.push({

@@ -10,6 +10,7 @@ import { EarnPlatform } from '../types';
 import { findTokenDataByName, TokenModel } from '@shared-modules/tokens';
 import { addAnalyticsToLink } from '@shared-modules/analytics';
 import { buildEarnItemId } from '../helpers';
+import { DEFAULT_EARN_POSITIONS } from '../constants';
 
 const forNewUsersLimits: Record<AvailableTokensForEarn, number> = {
   USDT: 401,
@@ -40,9 +41,11 @@ export function formatMexcEarn(
     const token = findTokenDataByName(item.currency, tokens);
 
     item.financialProductList.forEach((product) => {
-      const apy = product.subsidyTieredFlag
-        ? +product.showApr
-        : +product.baseApr;
+      if (product.soldOut) {
+        return;
+      }
+
+      const apy = product.showApr ? +product.showApr : +product.baseApr;
       const isForNewUsers = apy > forNewUsersLimits[item.currency];
 
       const data: Omit<EarnItem, 'id'> = {
@@ -54,7 +57,7 @@ export function formatMexcEarn(
         periodType: 'flexible',
         platform: {
           link: addAnalyticsToLink(
-            'https://www.mexc.com/staking?inviteCode=3KJXS',
+            'https://www.mexc.com/staking?inviteCode=121CbH',
           ),
           name: EarnPlatform.Mexc,
         },
@@ -64,6 +67,7 @@ export function formatMexcEarn(
         badges: isForNewUsers
           ? [EarnItemBadge.ForNewUsers, EarnItemBadge.SmallLimit]
           : undefined,
+        positions: DEFAULT_EARN_POSITIONS,
       };
 
       acc.push({

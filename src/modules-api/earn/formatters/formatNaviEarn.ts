@@ -4,6 +4,7 @@ import { EarnPlatform } from '../types';
 import { findTokenDataByName, TokenModel } from '@shared-modules/tokens';
 import { addAnalyticsToLink } from '@shared-modules/analytics';
 import { buildEarnItemId } from '../helpers';
+import { DEFAULT_EARN_POSITIONS } from '../constants';
 
 export const formatNaviEarn = (
   items: NaviEarnItemDto[],
@@ -27,6 +28,7 @@ export const formatNaviEarn = (
       maxRate: item.instantAPR,
       duration: infinityValue,
       productLevel: EarnItemLevel.Beginner,
+      positions: DEFAULT_EARN_POSITIONS,
     };
 
     acc.push({

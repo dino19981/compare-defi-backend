@@ -9,6 +9,7 @@ import { EarnPlatform } from '../types';
 import { findTokenDataByName, TokenModel } from '@shared-modules/tokens';
 import { addAnalyticsToLink } from '@shared-modules/analytics';
 import { buildEarnItemId } from '../helpers';
+import { DEFAULT_EARN_POSITIONS } from '../constants';
 
 // dual invest и прочая хрень, которая не подходит под наши условия
 const badEnumTypes = [6, 10, 11];
@@ -52,7 +53,7 @@ export const formatHtxEarn = (
         duration: getDuration(product.term),
         platform: {
           link: addAnalyticsToLink(
-            `https://www.htx.com/en-us/financial/earn/?type=limit&invite_code=8czja223&currentProjectType=${currentProjectTypeByType[item.type]}`,
+            `https://www.htx.com/en-us/financial/earn/?type=limit&invite_code=9czja223&currentProjectType=${currentProjectTypeByType[item.type]}`,
           ),
           name: EarnPlatform.Htx,
         },
@@ -60,6 +61,7 @@ export const formatHtxEarn = (
         productLevel: EarnItemLevel.Beginner,
         // у всех токенов с 100% APY маленький лимит
         badges: getBadges(apy, product.type),
+        positions: DEFAULT_EARN_POSITIONS,
       };
 
       const id = buildEarnItemId(data, [product.productId]);

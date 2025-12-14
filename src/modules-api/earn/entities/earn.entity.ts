@@ -51,12 +51,14 @@ export class EarnEntity {
 
   @Prop({ type: [String], default: [] })
   badges?: EarnItemBadge[];
+
+  @Prop({ type: Object, required: true, default: {} })
+  positions: Record<string, number>;
 }
 
 export type EarnDocument = EarnEntity & { _id: Types.ObjectId };
 
 export const EarnSchema = SchemaFactory.createForClass(EarnEntity);
-
 // Создаем индексы для оптимизации поиска
 EarnSchema.index({ platformName: 1, maxRate: -1, tokenName: 1 });
 EarnSchema.index({ tokenName: 1 });

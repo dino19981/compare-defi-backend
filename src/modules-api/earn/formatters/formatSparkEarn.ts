@@ -4,6 +4,7 @@ import { EarnPlatform } from '../types';
 import { findTokenDataByName, TokenModel } from '@shared-modules/tokens';
 import { addAnalyticsToLink } from '@shared-modules/analytics';
 import { buildEarnItemId } from '../helpers';
+import { DEFAULT_EARN_POSITIONS } from '../constants';
 
 const coins = ['USDT', 'USDC'];
 
@@ -31,6 +32,7 @@ export function formatSparkEarn(
       maxRate: +data.rate * 100,
       productLevel: EarnItemLevel.Beginner,
       duration: infinityValue,
+      positions: DEFAULT_EARN_POSITIONS,
     };
 
     return {
