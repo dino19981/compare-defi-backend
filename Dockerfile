@@ -2,7 +2,7 @@ FROM node:20-alpine AS build
 WORKDIR /app
 
 COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile --registry https://registry.npmjs.org/
+RUN yarn install --registry https://registry.npmjs.org/ --network-timeout 600000
 
 COPY . .
 RUN yarn build
