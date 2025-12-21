@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { InjectConnection, InjectModel } from '@nestjs/mongoose';
-import { Connection, Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { TokenEntity, TokenDocument } from './token.entity';
 import { TokenModel } from './types/TokensDto';
 import { formatToLowerCaseTokenName } from './helpers';
@@ -11,8 +11,6 @@ export class TokensRepository {
   constructor(
     @InjectModel(TokenEntity.name)
     private readonly tokensModel: Model<TokenDocument>,
-    @InjectConnection()
-    private readonly connection: Connection,
   ) {}
 
   async findAll() {
@@ -35,17 +33,13 @@ export class TokensRepository {
   }
 
   async replaceMany(data: TokenModel[]): Promise<TokenModel[]> {
-    const session = await this.connection.startSession();
-
     try {
-      await session.withTransaction(async () => {
-        await this.tokensModel.deleteMany({}, { session });
-        await this.tokensModel.insertMany(data, { session });
-      });
-
+      await this.tokensModel.deleteMany({});
+      await this.tokensModel.insertMany(data);
       return data;
-    } finally {
-      await session.endSession();
+    } catch (error) {
+      console.error(error);
+      throw error;
     }
   }
 
