@@ -9,7 +9,6 @@ import { LendingsModule } from '@modules-api/lendings/lendings.module';
 import { databaseConfig } from './configs/database.config';
 import { TokensJob, EarnDataJob, PoolsDataJob } from './jobs';
 import { TokensModule } from '@shared-modules/tokens';
-import { RedisModule } from '@shared-modules/redis';
 import { SeoModule } from './modules-api/seo/seo.module';
 
 @Module({
@@ -18,7 +17,7 @@ import { SeoModule } from './modules-api/seo/seo.module';
       useFactory: () => databaseConfig,
     }),
     ScheduleModule.forRoot(),
-    RedisModule,
+    // RedisModule,
     TokensModule,
     EarnModule,
     PoolsModule,
@@ -28,4 +27,4 @@ import { SeoModule } from './modules-api/seo/seo.module';
   controllers: [AppController],
   providers: [AppService, EarnDataJob, PoolsDataJob, TokensJob],
 })
-export class AppModule {}
+export class AppModule { }

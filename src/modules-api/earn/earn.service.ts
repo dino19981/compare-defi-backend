@@ -32,7 +32,6 @@ import { EarnRepository } from './repositories/earn.repository';
 import { TokensService } from 'src/shared/modules/tokens';
 import { EarnMetaDto } from './dtos/EarnMeta.dto';
 import { EarnMetaRepository } from './repositories/earnMeta.repository';
-import { RedisService } from '@shared-modules/redis';
 import { PagesSettingsDto } from './dtos/pagesSettings.dto';
 import { earnRoutes } from './constants';
 
@@ -63,8 +62,7 @@ export class EarnService {
     private readonly jitoService: JitoService,
     private readonly earnRepository: EarnRepository,
     private readonly earnMetaRepository: EarnMetaRepository,
-    private readonly redisService: RedisService,
-  ) {}
+  ) { }
 
   async fetchEarnItems(): Promise<EarnResponseDto> {
     try {
