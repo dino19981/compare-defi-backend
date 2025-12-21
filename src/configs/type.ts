@@ -1,5 +1,7 @@
 export type TConfig = {
   port: number;
+  globalPrefix: string;
+  env: string;
   swagger: {
     title: string;
     description: string;

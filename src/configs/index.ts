@@ -6,6 +6,8 @@ dotenv.config();
 export const config = (): TConfig => {
   return {
     port: Number(process.env.PORT) || 3010,
+    globalPrefix: process.env.GLOBAL_PREFIX || '',
+    env: process.env.NODE_ENV || 'development',
 
     swagger: {
       title: 'Compare DeFi API',
