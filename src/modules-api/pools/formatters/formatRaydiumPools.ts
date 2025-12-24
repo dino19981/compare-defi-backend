@@ -1,7 +1,8 @@
 import { PoolItem, PoolPlatform } from '../types';
-import { v4 as uuidv4 } from 'uuid';
 import { Chain } from 'src/shared/modules/chains';
 import { RaydiumPool } from '@modules/raydium/types/RaydiumPool.dto';
+import { buildPoolItemId } from '../helpers';
+import { DEFAULT_POOL_POSITIONS } from '../constants';
 
 const SOLANA_CHAIN_ID = 'solana';
 
@@ -16,9 +17,7 @@ export function formatRaydiumPools(
       return acc;
     }
 
-    acc.push({
-      id: uuidv4(),
-
+    const data = {
       firstToken: {
         name: item.mintA.symbol,
         imageUrl: item.mintA.logoURI,
@@ -37,13 +36,19 @@ export function formatRaydiumPools(
         imageUrl: chain.image.small,
       },
 
-      tvl: item.tvl,
-      volume: item.day.volume,
-      fee: item.feeRate * 100,
+      tvl: +item.tvl,
+      volume: +item.day.volume,
+      fee: +item.feeRate * 100,
 
       apr: item.day.apr,
 
       badges: [],
+      positions: DEFAULT_POOL_POSITIONS,
+    };
+
+    acc.push({
+      ...data,
+      id: buildPoolItemId(data),
     });
     return acc;
   }, []);

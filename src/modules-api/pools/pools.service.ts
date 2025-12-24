@@ -8,24 +8,23 @@ import {
 } from './formatters';
 import { Chains, ChainsService } from 'src/shared/modules/chains';
 import { UniSwapService } from '@modules/uniswap';
-import { PoolsRepository } from './pools.repository';
+import { PoolsRepository, PoolsMetaRepository } from './repositories';
 import { PoolRequest } from './dtos/poolRequest.dto';
 import { CetusService } from '@modules/cetus';
 import { RaydiumService } from '@modules/raydium';
 import { formatRaydiumPools } from './formatters/formatRaydiumPools';
 import { TokensService } from '@shared-modules/tokens';
-import { PoolPlatform } from './types';
-import { MetaDto } from 'src/shared/dtos/meta.dto';
+import { PoolMetaDto } from './dtos/poolMeta.dto';
 
-const DEFAULT_META: MetaDto = {
+const DEFAULT_META: PoolMetaDto = {
   platforms: [],
   totalItems: 0,
+  tokens: [],
 };
 
 @Injectable()
 export class PoolsService {
   private readonly logger = new Logger(PoolsService.name);
-  private meta: MetaDto = DEFAULT_META;
 
   constructor(
     private readonly pancakeSwapService: PancakeSwapService,
@@ -35,6 +34,7 @@ export class PoolsService {
     private readonly poolsRepository: PoolsRepository,
     private readonly cetusService: CetusService,
     private readonly raydiumService: RaydiumService,
+    private readonly poolsMetaRepository: PoolsMetaRepository,
   ) {}
 
   async getPoolsItemsJob(): Promise<PoolsResponseDto> {
@@ -90,9 +90,11 @@ export class PoolsService {
           : []),
       ];
 
+      const meta = await this.collectMeta(poolItems);
+
       return {
         data: poolItems as never as PoolItemDto[],
-        meta: this.meta,
+        meta,
         pagination: {
           total: poolItems.length,
         },
@@ -114,47 +116,44 @@ export class PoolsService {
   }
 
   async getPoolsItems(query: PoolRequest): Promise<PoolsResponseDto> {
-    const data = await this.poolsRepository.findBy(query);
+    const [data, meta] = await Promise.all([
+      this.poolsRepository.findBy(query),
+      this.poolsMetaRepository.find(),
+    ]);
 
     if (!data.data.length && !Object.keys(query?.filter || {}).length) {
-      await this.savePoolItemsInDb();
+      await this.smartUpdatePoolItemsInDb();
       const finedData = await this.poolsRepository.findBy(query);
 
       return {
         data: finedData.data,
-        meta: this.meta,
+        meta,
         pagination: {
           total: finedData.total,
         },
       };
     }
 
-    if (!this.meta.platforms.length) {
-      await this.collectMeta();
-    }
-
     return {
       data: data.data,
-      meta: this.meta,
+      meta,
       pagination: {
         total: data.total,
       },
     };
   }
 
-  async savePoolItemsInDb() {
+  async smartUpdatePoolItemsInDb() {
     const poolsData = await this.getPoolsItemsJob();
-    await this.poolsRepository.saveMany(poolsData.data);
+    await this.poolsRepository.smartUpdate(poolsData.data);
 
-    await this.collectMeta(poolsData.data);
+    const meta = await this.collectMeta(poolsData.data);
+    await this.poolsMetaRepository.replace(meta);
 
-    return {
-      data: poolsData.data,
-      meta: this.meta,
-    };
+    return poolsData;
   }
 
-  private async collectMeta(data?: PoolItemDto[]) {
+  private async collectMeta(data?: PoolItemDto[]): Promise<PoolMetaDto> {
     if (!data) {
       data = await this.poolsRepository.findAll();
     }
@@ -162,18 +161,22 @@ export class PoolsService {
     const meta = data.reduce(
       (acc, item) => {
         acc.platforms.add(item.platform.name);
+        acc.tokens[item.firstToken.name] = item.firstToken;
+        acc.tokens[item.secondToken.name] = item.secondToken;
         acc.totalItems++;
         return acc;
       },
       {
         platforms: new Set(),
         totalItems: 0,
+        tokens: {},
       },
     );
 
-    this.meta = {
+    return {
       ...meta,
-      platforms: Array.from(meta.platforms) as PoolPlatform[],
+      platforms: Array.from(meta.platforms) as string[],
+      tokens: Object.values(meta.tokens),
     };
   }
 }

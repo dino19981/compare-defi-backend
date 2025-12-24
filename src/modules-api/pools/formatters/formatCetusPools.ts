@@ -1,7 +1,8 @@
 import { PoolItem, PoolPlatform } from '../types';
-import { v4 as uuidv4 } from 'uuid';
 import { Chain } from 'src/shared/modules/chains';
 import { CetusPool } from '@modules/cetus/types/CetusEarn.dto';
+import { buildPoolItemId } from '../helpers';
+import { DEFAULT_POOL_POSITIONS } from '../constants';
 
 const SUI_CHAIN_ID = 'sui';
 
@@ -16,9 +17,7 @@ export function formatCetusPools(
       return acc;
     }
 
-    acc.push({
-      id: uuidv4(),
-
+    const data = {
       firstToken: {
         name: item.coinA.symbol,
         imageUrl: item.coinA.logoURL,
@@ -44,6 +43,12 @@ export function formatCetusPools(
       apr: +item.totalApr * 100,
 
       badges: [],
+      positions: DEFAULT_POOL_POSITIONS,
+    };
+
+    acc.push({
+      ...data,
+      id: buildPoolItemId(data),
     });
     return acc;
   }, []);

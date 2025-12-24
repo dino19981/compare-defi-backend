@@ -26,5 +26,5 @@ export class PoolItemPlatformDto {
   })
   @IsOptional()
   @IsString()
-  refLink: string;
+  refLink?: string;
 }

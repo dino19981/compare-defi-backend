@@ -13,8 +13,6 @@ export class LendingsRepository {
   ) {}
 
   async findAll(query: LendingRequest): Promise<LendingDto[]> {
-    console.log('Получен запрос:', JSON.stringify(query, null, 2));
-
     const filter = this.buildMongoFilter(query.filter);
     const sort = this.buildMongoSort(query.sort);
 

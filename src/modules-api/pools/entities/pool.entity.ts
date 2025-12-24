@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { PoolItemTokenDto } from './dtos/poolItemToken.dto';
-import { PoolItemPlatformDto } from './dtos/poolItemPlatformDto.dto';
-import { PoolItemBadge } from './types';
+import { PoolItemTokenDto } from '../dtos/poolItemToken.dto';
+import { PoolItemPlatformDto } from '../dtos/poolItemPlatformDto.dto';
+import { PoolItemBadge } from '../types';
 import { ChainDto } from 'src/shared/dtos/chain.dto';
 import { Types } from 'mongoose';
 
@@ -24,20 +24,23 @@ export class PoolEntity {
   @Prop({ type: Object, required: true })
   platform: PoolItemPlatformDto;
 
-  @Prop({ type: String, required: true })
-  tvl: string;
+  @Prop({ type: Number, required: true })
+  tvl: number;
 
-  @Prop({ type: String, required: true })
-  volume: string;
+  @Prop({ type: Number, required: true })
+  volume: number;
 
-  @Prop({ type: String, required: true })
-  fee: string;
+  @Prop({ type: Number, required: true })
+  fee: number;
 
   @Prop({ type: Number, required: true })
   apr: number;
 
   @Prop({ type: [Object], default: [] })
   badges?: PoolItemBadge[];
+
+  @Prop({ type: Object, required: true })
+  positions: Record<string, number>;
 }
 
 export const PoolSchema = SchemaFactory.createForClass(PoolEntity);

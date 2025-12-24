@@ -1,7 +1,8 @@
 import { PoolItem, PoolPlatform } from '../types';
-import { v4 as uuidv4 } from 'uuid';
 import { Chain } from 'src/shared/modules/chains';
 import { UniSwapPoolDto } from '@modules/uniswap/types';
+import { buildPoolItemId } from '../helpers';
+import { DEFAULT_POOL_POSITIONS } from '../constants';
 
 export function formatUniSwapPools(
   items: UniSwapPoolDto[],
@@ -22,9 +23,7 @@ export function formatUniSwapPools(
     // ((volume24h × fee_rate) / totalLiquidity) \* 365 - годовая ставка
     const baseApr = ((volume * fee) / totalLiquidity) * 365;
 
-    acc.push({
-      id: uuidv4(),
-
+    const data = {
       firstToken: {
         name: item.token0.symbol,
         imageUrl: item.token0.logo,
@@ -45,11 +44,17 @@ export function formatUniSwapPools(
 
       tvl: totalLiquidity,
       volume: volume,
-      fee: fee,
+      fee,
 
       apr: item.boostedApr ? baseApr + item.boostedApr : baseApr,
 
       badges: [],
+      positions: DEFAULT_POOL_POSITIONS,
+    };
+
+    acc.push({
+      ...data,
+      id: buildPoolItemId(data),
     });
     return acc;
   }, []);

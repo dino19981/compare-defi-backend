@@ -2,9 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel, InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import { Model } from 'mongoose';
-import { PoolEntity, PoolDocument } from './pools.entity';
-import { PoolItemDto } from './dtos/pool.dto';
-import { PoolRequest } from './dtos/poolRequest.dto';
+import { PoolEntity, PoolDocument } from '../entities';
+import { PoolItemDto } from '../dtos/pool.dto';
+import { PoolRequest } from '../dtos/poolRequest.dto';
+import { keyBy } from 'lodash';
+import { PoolPlatform } from '../types';
 
 @Injectable()
 export class PoolsRepository {
@@ -18,8 +20,6 @@ export class PoolsRepository {
   async findBy(
     query: PoolRequest,
   ): Promise<{ data: PoolItemDto[]; total: number }> {
-    console.log('Получен запрос:', JSON.stringify(query, null, 2));
-
     const filter = this.buildMongoFilter(query.filter);
     const sort = this.buildMongoSort(query.sort);
 
@@ -57,6 +57,84 @@ export class PoolsRepository {
 
   async saveMany(data: PoolItemDto[]): Promise<PoolItemDto[]> {
     await this.poolsModel.insertMany(data);
+    return data;
+  }
+
+  /**
+   * 1) Если не пришло обновление для какого-то pool item, то удаляем его из базы
+   * 2) Если какого то pool item нет в базе а он пришел в обновлении, то добавляем его в базу
+   */
+  async smartUpdate(data: PoolItemDto[]): Promise<PoolItemDto[]> {
+    const currentPools = this.poolsModel.find({});
+    const dataById = keyBy(data, 'id');
+
+    const BATCH_SIZE = 1000;
+    const updates: any[] = [];
+    const deletes: string[] = [];
+
+    const currentPoolsCount = await currentPools.countDocuments();
+
+    // Если база пустая, то просто сохраняем все данные
+    if (currentPoolsCount === 0) {
+      console.log(
+        `Сохранение pools в пустую базу, кол-во - ${data.length} шт.`,
+      );
+      return this.saveMany(data);
+    }
+
+    for await (const doc of currentPools) {
+      const newData = dataById[doc.id];
+
+      if (!newData) {
+        if (doc.platform.name !== PoolPlatform.Raydium) {
+          console.log(doc, 'удаляется');
+        }
+        deletes.push(doc.id);
+        continue;
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { positions, ...restNewData } = newData;
+
+      updates.push({
+        updateOne: {
+          filter: { _id: doc._id },
+          update: {
+            $set: restNewData,
+          },
+        },
+      });
+
+      delete dataById[doc.id];
+
+      if (updates.length === BATCH_SIZE) {
+        console.log(`Обновлены ${updates.length} pool items`);
+
+        await this.poolsModel.bulkWrite(updates, { ordered: false });
+        updates.length = 0;
+      }
+    }
+
+    if (updates.length > 0) {
+      console.log(`Обновлены ${updates.length} pool items после цикла`);
+
+      await this.poolsModel.bulkWrite(updates, { ordered: false });
+    }
+
+    if (Object.keys(dataById).length > 0) {
+      console.log(
+        `Добавлены новые pool items ${Object.keys(dataById).length}}`,
+      );
+
+      await this.poolsModel.insertMany(Object.values(dataById));
+    }
+
+    if (deletes.length > 0) {
+      console.log(`Удалены pool items ${deletes.length}`);
+
+      await this.poolsModel.deleteMany({ id: { $in: deletes } });
+    }
+
     return data;
   }
 
@@ -206,6 +284,9 @@ export class PoolsRepository {
       ...(item.badges && {
         badges: [...item.badges],
       }),
+      positions: {
+        ...item.positions,
+      },
     };
   }
 

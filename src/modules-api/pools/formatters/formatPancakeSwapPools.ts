@@ -8,8 +8,8 @@ import { Chain } from 'src/shared/modules/chains';
 import { keyBy } from 'lodash';
 import { pancakeSwapChainNameById } from '@modules/pancakeSwap/constants/hardcodedImages';
 import { findFirstAvailableImageUrl } from 'src/shared/helpers/checkImageUrl';
-import { DEFAULT_POOL_TOKEN_IMAGE } from '../constants';
-import { v4 as uuidv4 } from 'uuid';
+import { DEFAULT_POOL_POSITIONS, DEFAULT_POOL_TOKEN_IMAGE } from '../constants';
+import { buildPoolItemId } from '../helpers';
 
 // Функция для разбиения массива на батчи
 function chunkArray<T>(array: T[], chunkSize: number): T[][] {
@@ -92,13 +92,7 @@ export async function formatPancakeSwapPools(
     tokenConfigs,
   );
 
-  let bad = 0;
-
   imageUrls.forEach((imageUrl) => {
-    if (imageUrl.imageUrl === DEFAULT_POOL_TOKEN_IMAGE) {
-      bad++;
-    }
-
     tokenImageBySymbol[imageUrl.symbol.toLowerCase()] = imageUrl.imageUrl;
   });
 
@@ -123,9 +117,7 @@ export async function formatPancakeSwapPools(
     const secondTokenImage =
       tokenImageBySymbol[item.token1.symbol.toLowerCase()];
 
-    acc.push({
-      id: uuidv4(),
-
+    const data = {
       firstToken: {
         name: item.token0.symbol,
         imageUrl: firstTokenImage,
@@ -151,6 +143,12 @@ export async function formatPancakeSwapPools(
       apr: +item.apr24h * 100,
 
       badges: [],
+      positions: DEFAULT_POOL_POSITIONS,
+    };
+
+    acc.push({
+      ...data,
+      id: buildPoolItemId(data),
     });
 
     return acc;

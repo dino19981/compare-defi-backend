@@ -17,6 +17,8 @@ export interface PoolItem {
   apr: number;
 
   badges?: PoolItemBadge[];
+
+  positions: Record<string, number>;
 }
 
 export interface PoolItemToken {

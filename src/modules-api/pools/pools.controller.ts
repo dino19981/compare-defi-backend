@@ -20,18 +20,17 @@ export class PoolsController {
     return this.poolsService.getPoolsItems(query);
   }
 
-  @Get('without-job')
-  @SwaggerSchemaDecorator({
-    schemaQuery: PoolRequest,
-    schemaResponse: PoolsResponseDto,
-    description: 'Получить список пуллов без job',
-  })
-  getPoolsItemsWithoutJob(): Promise<PoolsResponseDto> {
-    return this.poolsService.getPoolsItemsJob();
-  }
+  // @Get('save-tokens')
+  // saveTokens() {
+  //   return this.poolsService.testTokens();
+  // }
 
-  @Get('save-tokens')
-  saveTokens() {
-    return this.poolsService.testTokens();
+  @Get('update-pool-items-in-db')
+  @SwaggerSchemaDecorator({
+    schemaResponse: PoolsResponseDto,
+    description: 'Получить список пуллов',
+  })
+  updatePoolItemsInDb(): Promise<PoolsResponseDto> {
+    return this.poolsService.smartUpdatePoolItemsInDb();
   }
 }

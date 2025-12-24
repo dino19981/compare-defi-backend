@@ -13,11 +13,8 @@ export class PoolsDataJob {
     this.logger.log('Starting pools data collection job...');
 
     try {
-      const data = await this.poolsService.savePoolItemsInDb();
-
-      this.logger.log(
-        `Pools data saved to db. Total items: ${data.data.length}`,
-      );
+      await this.poolsService.smartUpdatePoolItemsInDb();
+      this.logger.log(`Pools data updated in db`);
     } catch (error) {
       this.logger.error('Error in pools data collection job:', error);
     }

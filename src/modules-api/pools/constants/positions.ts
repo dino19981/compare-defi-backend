@@ -1,0 +1,5 @@
+export const DEFAULT_POOL_POSITION = 99999;
+
+export const DEFAULT_POOL_POSITIONS = {
+  seo: DEFAULT_POOL_POSITION,
+};

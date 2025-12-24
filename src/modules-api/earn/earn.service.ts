@@ -62,7 +62,7 @@ export class EarnService {
     private readonly jitoService: JitoService,
     private readonly earnRepository: EarnRepository,
     private readonly earnMetaRepository: EarnMetaRepository,
-  ) { }
+  ) {}
 
   async fetchEarnItems(): Promise<EarnResponseDto> {
     try {

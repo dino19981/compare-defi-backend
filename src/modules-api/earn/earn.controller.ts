@@ -20,15 +20,6 @@ export class EarnController {
     return this.earnService.getEarnItems(query);
   }
 
-  @Get('without-job')
-  @SwaggerSchemaDecorator({
-    schemaResponse: EarnResponseDto,
-    description: 'Получить список earn элементов',
-  })
-  getEarnItemsWithoutJob(): Promise<EarnResponseDto> {
-    return this.earnService.fetchEarnItems();
-  }
-
   @Get('pages-settings')
   @SwaggerSchemaDecorator({
     schemaResponse: PagesSettingsDto,
@@ -47,12 +38,12 @@ export class EarnController {
     return this.earnService.smartUpdateEarnItemsInDb();
   }
 
-  @Get('update-positions')
-  @SwaggerSchemaDecorator({
-    schemaResponse: EarnResponseDto,
-    description: 'Получить список earn элементов',
-  })
-  updateEarnItemsInwqeDb() {
-    return this.earnService.updateEarnItemsInwqeDb();
-  }
+  // @Get('update-positions')
+  // @SwaggerSchemaDecorator({
+  //   schemaResponse: EarnResponseDto,
+  //   description: 'Получить список earn элементов',
+  // })
+  // updateEarnItemsInwqeDb() {
+  //   return this.earnService.updateEarnItemsInwqeDb();
+  // }
 }

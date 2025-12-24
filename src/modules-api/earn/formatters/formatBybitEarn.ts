@@ -24,10 +24,6 @@ export function formatBybitEarn(
         return;
       }
 
-      if (item.tokenName?.toUpperCase() === 'USDT') {
-        console.log(item, 'qweqwewqeqweqwe');
-      }
-
       const data: Omit<EarnItem, 'id'> = {
         name: getEarnItemNameByProductType(productType.product_type),
         token: {

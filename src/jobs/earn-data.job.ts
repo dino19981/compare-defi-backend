@@ -13,11 +13,8 @@ export class EarnDataJob {
     this.logger.log('Starting earn data collection job...');
 
     try {
-      const earnData = await this.earnService.smartUpdateEarnItemsInDb();
-
-      this.logger.log(
-        `Earn data saved to db. Total items: ${earnData.data.length}`,
-      );
+      await this.earnService.smartUpdateEarnItemsInDb();
+      this.logger.log(`Earn data updated in db`);
     } catch (error) {
       this.logger.error('Error in earn data collection job:', error);
     }

@@ -7,13 +7,14 @@ import {
   IsNumber,
   IsOptional,
   IsEnum,
+  IsObject,
 } from 'class-validator';
 import { ChainDto } from 'src/shared/dtos/chain.dto';
 import { PoolItemPlatformDto } from './poolItemPlatformDto.dto';
 import { PoolItemBadge, PoolPlatform } from '../types';
 import { PoolItemTokenDto } from './poolItemToken.dto';
-import { MetaDto } from 'src/shared/dtos/meta.dto';
 import { PaginationDto } from 'src/shared/dtos/pagination.dto';
+import { PoolMetaDto } from './poolMeta.dto';
 
 export class PoolItemDto {
   @ApiProperty({ description: 'Уникальный идентификатор', example: 'pool_001' })
@@ -42,14 +43,14 @@ export class PoolItemDto {
 
   @ApiProperty({ description: 'TVL' })
   @IsNumber()
-  tvl: string;
+  tvl: number;
 
   @IsNumber()
-  volume: string;
+  volume: number;
 
   @ApiProperty({ description: 'Комиссия' })
   @IsNumber()
-  fee: string;
+  fee: number;
 
   @ApiProperty({ description: 'APR' })
   @IsNumber()
@@ -66,6 +67,10 @@ export class PoolItemDto {
   @IsOptional()
   @IsEnum(PoolItemBadge, { each: true })
   badges?: PoolItemBadge[];
+
+  @ApiProperty({ description: 'Позиции элемента на странице' })
+  @IsObject()
+  positions: Record<string, number>;
 }
 
 export class PoolsResponseDto {
@@ -81,14 +86,21 @@ export class PoolsResponseDto {
 
   @ApiProperty({
     description: 'Мета',
-    type: MetaDto,
+    type: PoolMetaDto,
     example: {
       platforms: [PoolPlatform.PancakeSwap, PoolPlatform.Uniswap],
+      tokens: [
+        {
+          name: 'USDC',
+          imageUrl: 'https://example.com/usdc.png',
+        },
+      ],
+      totalItems: 100,
     },
   })
   @ValidateNested()
-  @Type(() => MetaDto)
-  meta: MetaDto;
+  @Type(() => PoolMetaDto)
+  meta: PoolMetaDto;
 
   @ApiProperty({
     description: 'Пагинация',
